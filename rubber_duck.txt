@@ -1,0 +1,56 @@
+https://www.youtube.com/watch?v=G6D9cBaLViA
+
+https://www.youtube.com/watch?v=vknfcDAbDC0&list=PLU7aW4OZeUzwYXbC_mbQJdAU7JUu81RZo&index=4
+
+
+-this one below
+17 minute
+https://www.youtube.com/watch?v=aSdVU9-SxH4
+-------------------------------------------
+frontend:
+
+npm create vite@latest frontend --template react
+npm run dev
+
+
+main menu: join or host game
+lobby: game id, voir les joueur connecter, choisir le deck (theme), bouton startgame
+board game: joueur avec leurs cartes et la timeline au centre
+
+
+-------------------------------------------
+backend
+uvicorn main:app --reload
+
+python main.py
+
+
+
+
+-----------------------------------
+Fonctionnement du jeux:
+
+drag and drop carte au bon endroit sur la timeline du centre
+
+Si c'est pas bon, le joueur repige une carte, la carte se fait replacer au bonne
+endroit
+
+Le but est de ne plus avoir de carte dans sa main
+
+-------------------------------------------
+
+classes necessaire
+
+TimeLine
+Game
+Hand?
+Player
+Deck
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+.timeline {
+        display: flex; /* Makes children stack horizontally */
+    gap: 10px;      /* Optional: adds spacing between items */
+  justify-content: center;  /* horizontal */
+  align-items: center;      /* vertical */
+}

@@ -1,0 +1,11 @@
+.tile {
+    width: 20px;
+    height: 100px;
+    background-color: #706f6f;
+    transform: translateY(10px);
+}
+
+.tile:hover {
+  cursor: pointer;
+    background-color: #e7e7ba;
+}

@@ -1,0 +1,5 @@
+.board-game {
+  justify-content: center;  /* horizontal */
+  align-items: center;      /* vertical */
+    gap: 200px;
+}
