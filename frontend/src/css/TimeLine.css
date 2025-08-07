@@ -1,6 +1,24 @@
 .timeline {
-        display: flex; /* Makes children stack horizontally */
-    gap: 10px;      /* Optional: adds spacing between items */
-  justify-content: center;  /* horizontal */
-  align-items: center;      /* vertical */
+  position: absolute;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1vh;
+  justify-content: center;
+  align-items: center;
+
+  width: auto;
+  max-width: none;
+  flex: 0 0 auto;
+  bottom: 70%;
+}
+
+.timeline-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+
+  width: max-content;
+  min-width: max-content;
+  flex: 0 0 auto;
 }

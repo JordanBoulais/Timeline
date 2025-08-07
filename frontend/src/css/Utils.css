@@ -1,0 +1,51 @@
+.vertical-div{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    z-index: 1;
+}
+
+
+.horizontal-div{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    z-index: 1;
+}
+
+.custom-label{
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+}
+
+.timeline_logo{
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-position: center;
+    opacity: 1; /* Your desired opacity */
+    z-index: 0;
+    background-image: url("../assets/timeline_logo.png");
+    background-repeat: no-repeat;
+}
+
+.top-spacer{
+  height: 25px;
+}
+
+.game-id{
+opacity: 30%;
+}
+
+.bg-color {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.05;
+}

@@ -1,6 +1,56 @@
 
 .hand {
-    display: flex; /* Makes children stack horizontally */
-    gap: 10px;      /* Optional: adds spacing between items */
-    transform: translateY(200px);
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: fit-content;
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
+    z-index: 1;
+}
+
+.hand-container{
+    position: absolute;
+    bottom: 0%;
+    height: 225px;
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: fit-content;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    flex-direction: column;
+    padding: 3vh;
+    background-color: #000000;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    z-index: 0;
+}
+
+.players-turn, .not-players-turn{
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    padding: 5px;
+    width: 100px;
+    height: 40px;
+    justify-content: center; /* horizontal centering */
+    align-items: center;     /* vertical centering */
+    flex-direction: column;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.0);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
+    transform: scale(0.8);
+}
+
+.players-turn{
+    border: 2px solid white;
+}
+.not-players-turn{
+    border: 2px solid black;
+}
+
+.players-turn-text{
+  padding: 0;
+    margin: 2px 0;
 }

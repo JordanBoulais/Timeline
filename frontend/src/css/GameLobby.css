@@ -1,0 +1,62 @@
+.game-lobby {
+    display: flex;
+    flex-direction: column; /* empile les TimeLineRow verticalement */
+    align-items: center;
+    position: fixed; /* or absolute */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999; /* on top of everything */
+    gap: 60px;
+    padding-top: 100px;
+}
+
+.player-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #1a1a1a;
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    width: 150px;
+    height: 50px;
+    justify-content: center; /* horizontal centering */
+    align-items: center;     /* vertical centering */
+    border: 2px solid white;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
+    background-color: rgba(0,0,0,0.1);
+}
+
+.player-card-frame {
+    gap: 75px;
+    display: flex;
+}
+
+.custom-input{
+        width: 50px;
+        height: 25px;
+        border-radius: 8px;
+        text-align: center;
+}
+
+custom-input:disabled {
+  background-color: #eee;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.custom-select{
+        width: 150px;
+        height: 35px;
+        border-radius: 8px;
+        text-align: center;
+}
+
+custom-select:disabled {
+  background-color: #eee;
+  color: #999;
+  cursor: not-allowed;
+}

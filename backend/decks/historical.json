@@ -1,34 +1,49 @@
 [
-  {
-    "title": "Fall of the Western Roman Empire",
-    "year": 476
-  },
-  {
-    "title": "Christopher Columbus Discovers America",
-    "year": 1492
-  },
-  {
-    "title": "French Revolution",
-    "year": 1789
-  },
-  {
-    "title": "World War I",
-    "year": 1914
-  },
-  {
-    "title": "World War II",
-    "year": 1939
-  },
-  {
-    "title": "Moon Landing",
-    "year": 1969
-  },
-  {
-    "title": "Fall of the Berlin Wall",
-    "year": 1989
-  },
-  {
-    "title": "September 11 Attacks",
-    "year": 2001
-  }
+  { "title": "Founding of Rome", "year": -753, "img": "founding_of_rome.png" },
+  { "title": "Birth of Confucius", "year": -551, "img": "confucius.png" },
+  { "title": "Battle of Marathon", "year": -490, "img": "marathon.png" },
+  { "title": "Death of Socrates", "year": -399, "img": "socrates.png" },
+  { "title": "Alexander the Great Begins His Conquests", "year": -336, "img": "alexander.png" },
+  { "title": "Construction of the Great Wall of China Begins", "year": -221, "img": "china_wall.png" },
+  { "title": "Julius Caesar Assassinated", "year": -44, "img": "cesar.png" },
+  { "title": "Birth of Jesus Christ", "year": 0, "img": "jesus.png" },
+  { "title": "Edict of Milan", "year": 313, "img": "milan.png" },
+  { "title": "Fall of the Western Roman Empire", "year": 476, "img": "roman_fall.png" },
+  { "title": "Rise of Islam", "year": 610, "img": "islam.png" },
+  { "title": "Battle of Tours", "year": 732, "img": "tours.png" },
+  { "title": "Charlemagne Crowned Emperor", "year": 800, "img": "charlemagne.png" },
+  { "title": "Vikings Discover North America", "year": 1000, "img": "vikings.png" },
+  { "title": "Battle of Hastings", "year": 1066, "img": "hastings.png" },
+  { "title": "Signing of the Magna Carta", "year": 1215, "img": "magna_carta.png" },
+  { "title": "Marco Polo Travels to China", "year": 1271, "img": "marco_polo.png" },
+  { "title": "Black Death Spreads in Europe", "year": 1347, "img": "black_death.png" },
+  { "title": "Fall of Constantinople", "year": 1453, "img": "constantinople.png" },
+  { "title": "Christopher Columbus Discovers America", "year": 1492, "img": "colombus.png" },
+  { "title": "Martin Luther's 95 Theses", "year": 1517, "img": "martin_luther.png" },
+  { "title": "Spanish Armada Defeated", "year": 1588, "img": "spanish_armada.png" },
+  { "title": "Galileo Uses Telescope", "year": 1609, "img": "galileo.png" },
+  { "title": "English Civil War Begins", "year": 1642, "img": "english_civil_war.png" },
+  { "title": "Glorious Revolution", "year": 1688, "img": "glorious_revolution.png" },
+  { "title": "American Declaration of Independence", "year": 1776, "img": "american_independence.png" },
+  { "title": "French Revolution", "year": 1789, "img": "french_revolution.png" },
+  { "title": "Battle of Waterloo", "year": 1815, "img": "waterloo.png" },
+  { "title": "Slavery Abolished in British Empire", "year": 1833, "img": "slavery.png" },
+  { "title": "American Civil War Begins", "year": 1861, "img": "civil_war.png" },
+  { "title": "First Airplane Flight", "year": 1903, "img": "first_plane.png" },
+  { "title": "World War I", "year": 1914, "img": "ww1.png" },
+  { "title": "Russian Revolution", "year": 1917, "img": "russia.png" },
+  { "title": "Stock Market Crash", "year": 1929, "img": "stock_crash.png" },
+  { "title": "World War II", "year": 1939, "img": "ww2.png" },
+  { "title": "United Nations Founded", "year": 1945, "img": "united_nations.png" },
+  { "title": "India Gains Independence", "year": 1947, "img": "india_independence.png" },
+  { "title": "Korean War Begins", "year": 1950, "img": "korean_war.png" },
+  { "title": "Cuban Missile Crisis", "year": 1962, "img": "cuban_missile.png" },
+  { "title": "Civil Rights Act Signed", "year": 1964, "img": "civil_act.png" },
+  { "title": "Moon Landing", "year": 1969, "img": "moon_landing.png" },
+  { "title": "Fall of Saigon", "year": 1975, "img": "saigon.png" },
+  { "title": "Fall of the Berlin Wall", "year": 1989, "img": "berlin_wall.png" },
+  { "title": "Nelson Mandela Released", "year": 1990, "img": "mandela.png" },
+  { "title": "September 11 Attacks", "year": 2001, "img": "11_sept.png" },
+  { "title": "Global Financial Crisis", "year": 2008, "img": "financial_crisis.png" },
+  { "title": "COVID-19 Pandemic Begins", "year": 2019, "img": "covid.png" }
 ]

@@ -1,4 +1,4 @@
-.guess-card-hand {
+.guess-card-hand, .guess-card-hand-disabled, .guess-card-hand-new {
     position: relative;
     border-radius: 8px;
     overflow: hidden;
@@ -6,15 +6,89 @@
     transition: transform 0.2s;
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    width: 400px;
-    height: 300px;
+    width: 133px;
+    height: 100px;
     justify-content: center; /* horizontal centering */
-    align-items: center;     /* vertical centering */
+    align-items: center; /* vertical centering */
+    flex-shrink: 0; /* Prevent shrinking in flexbox */
+    flex-grow: 0; /* Prevent growing in flexbox */
+    object-fit: contain; /* if it's an image or media */
+    border: 2px solid white;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.6);
+    z-index: 1;
 }
 
-.guess-card-hand:hover {
-  transform: translateY(-20px);
+@keyframes red-border {
+      0% {
+    border: 2px solid #ff0000;
+  }
+  100% {
+    border: 2px solid white;
+  }
+}
+
+@keyframes shake-card {
+      0% {
+    transform: translate(2px, 0px);
+  }
+     25% {
+    transform: translate(-2px, 0px);
+  }
+         50% {
+    transform: translate(2px, 0px);
+  }
+    75% {
+    transform: translate(-2px, 0px);
+  }
+  100% {
+    transform: translate(0px, 0px);
+  }
+}
+
+.guess-card-hand-new{
+    animation: red-border 1.2s forwards ease-in-out, shake-card 0.5s forwards linear;
+}
+
+.bg-image {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.2;
+    z-index: 0;
+}
+
+.guess-card-hand:hover, .guess-card-hand-new:hover {
+    transform: translateY(-10px);
+    cursor: pointer;
+}
+
+.guess-card-hand-selected, .guess-card-hand-selected-disabled {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    width: 133px;
+    height: 100px;
+    justify-content: center; /* horizontal centering */
+    align-items: center;     /* vertical centering */
+    transform: translateY(-10px);
+    box-shadow: 0 0 5px 5px #707070;
+    flex-shrink: 0;   /* Prevent shrinking in flexbox */
+    flex-grow: 0;     /* Prevent growing in flexbox */
+    object-fit: contain; /* if it's an image or media */
+    border: 2px solid white;
+}
+
+.guess-card-hand-disabled, .guess-card-hand-selected-disabled{
+  pointer-events: none;  /* Disables mouse interaction */
+  user-select: none;     /* Prevents text selection */
+}
+
+.guess-card-hand-selected:hover {
+    cursor: pointer;
 }
 
 .guess-card-timeline {
@@ -25,13 +99,34 @@
     transition: transform 0.2s;
     display: flex;
     flex-direction: column;
-    padding: 10px;
     width: 133px;
     height: 100px;
     justify-content: center; /* horizontal centering */
     align-items: center;     /* vertical centering */
+    flex-shrink: 0;   /* Prevent shrinking in flexbox */
+    flex-grow: 0;     /* Prevent growing in flexbox */
+    object-fit: contain; /* if it's an image or media */
+    border: 2px solid white;
 }
 
 .guess-card-timeline:hover {
 
+}
+
+.guess-year{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    top: 75%;
+    width: 100%;
+    background-color: rgba(0,0,0,0.5);
+    user-select: none;
+}
+
+.guess-title{
+    position: absolute;
+    top: 5%;
+    width: 100%;
+    font-size: 10px;
+    user-select: none;
 }

@@ -1,11 +1,45 @@
-.tile {
-    width: 20px;
+.tile, .tile-disabled, .hint-tile, .hint-tile-disabled {
+    width: 30px;
     height: 100px;
-    background-color: #706f6f;
-    transform: translateY(10px);
+    opacity: 0.05;
+    background-color: #ffffff;
+    flex-shrink: 0;   /* Prevent shrinking in flexbox */
+    flex-grow: 0;     /* Prevent growing in flexbox */
+    object-fit: contain; /* if it's an image or media */
+    border-radius: 8px;
 }
 
-.tile:hover {
+@keyframes glowOpacity {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.tile-disabled {
+    pointer-events: none;
+    user-select: none;     /* Prevents text selection */
+}
+
+.hint-tile {
+  background-color: #faede5;
+  animation: glowOpacity 2s infinite ease-in-out;
+}
+
+.hint-tile-disabled {
+    background-color: #faede5;
+    animation: glowOpacity 2s infinite ease-in-out;
+    pointer-events: none;
+    user-select: none;     /* Prevents text selection */
+}
+
+.tile:hover, .hint-tile:hover {
   cursor: pointer;
-    background-color: #e7e7ba;
+    background-color: #ffffff;
+    opacity: 0.8;
 }

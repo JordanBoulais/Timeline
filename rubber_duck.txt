@@ -13,9 +13,7 @@ npm create vite@latest frontend --template react
 npm run dev
 
 
-main menu: join or host game
-lobby: game id, voir les joueur connecter, choisir le deck (theme), bouton startgame
-board game: joueur avec leurs cartes et la timeline au centre
+
 
 
 -------------------------------------------
@@ -23,6 +21,10 @@ backend
 uvicorn main:app --reload
 
 python main.py
+
+
+
+
 
 
 
@@ -38,19 +40,3 @@ endroit
 Le but est de ne plus avoir de carte dans sa main
 
 -------------------------------------------
-
-classes necessaire
-
-TimeLine
-Game
-Hand?
-Player
-Deck
-
-
-
-
-
-
-
-
