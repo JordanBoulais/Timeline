@@ -98,6 +98,33 @@ class GuessCardHand extends React.Component {
               dragStartX : e.clientX,
               dragStartY : e.clientY,
             });
+
+          const sourceElem = e.currentTarget;
+
+          // Clone the original element
+          const dragImage = sourceElem.cloneNode(true);
+
+          // Apply computed styles
+          const computedStyles = window.getComputedStyle(sourceElem);
+          for (let prop of computedStyles) {
+            dragImage.style[prop] = computedStyles.getPropertyValue(prop);
+          }
+
+          // dragImage.style.position = 'absolute';
+          // dragImage.style.top = '-9999px';
+          // dragImage.style.left = '-9999px';
+          // dragImage.style.zIndex = '9999';
+
+          // Modify the style (e.g. make it semi-transparent)
+          dragImage.style.opacity = "1.0";
+          document.body.appendChild(dragImage);
+
+          // Use it as the drag image
+          e.dataTransfer.setDragImage(dragImage, dragImage.offsetWidth / 2, dragImage.offsetHeight / 2);
+
+          // Save it for cleanup
+          e.dataTransfer._customImage = dragImage;
+          sourceElem.style.opacity = 0;
         }
 
         handleDragEnd = async (e) => {
@@ -132,19 +159,21 @@ class GuessCardHand extends React.Component {
 
     const dragStyle = isDragging
       ? {
-        transform: `translate(${dragOffsetX}px, ${dragOffsetY}px)`,
-      zIndex: -10,
-      opacity: 0.5,
+      opacity: 0.0,
         }
       : {}
 
     return(
         <div className={className}
-            onMouseDown={this.handleMouseDown}
-            onMouseMove={this.handleMouseMove}
-            onMouseUp={this.handleMouseUp}
+            // onMouseDown={this.handleMouseDown}
+            // onMouseMove={this.handleMouseMove}
+            // onMouseUp={this.handleMouseUp}
+            onDragStart={this.handleDragStart}
+             onDragEnd={this.handleDragEnd}
+            draggable
             onClick={this.handleClick}
-            style={dragStyle}>
+            // style={dragStyle}
+        >
 
             <div className="bg-image"
                  style={{
