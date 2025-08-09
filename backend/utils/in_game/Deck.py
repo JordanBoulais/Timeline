@@ -27,6 +27,20 @@ class Deck():
     def shuffle(self):
         shuffle(self.cards)
 
+    def get_cards(self):
+        return self.cards
+
+    def __str__(self):
+
+        out_str = "{"
+
+        for card in self.cards:
+            out_str += str(card)
+        out_str += "}"
+
+        return out_str
+
+
     @classmethod
     def load_deck(cls, deck_name):
         script_dir = os.path.dirname(os.path.abspath(__file__))

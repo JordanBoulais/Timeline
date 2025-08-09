@@ -27,7 +27,7 @@
     z-index: 0;
 }
 
-.players-turn, .not-players-turn{
+.players-turn, .not-players-turn, .players-won{
     position: relative;
     overflow: hidden;
     display: flex;
@@ -48,6 +48,22 @@
 }
 .not-players-turn{
     border: 2px solid black;
+}
+.players-won{
+    animation: glow-win 1s infinite;
+    border: 2px solid #fff9f0;
+}
+
+@keyframes glow-win {
+      0% {
+    box-shadow: 0 0 0px 0px #fff9f0;
+  }
+    50% {
+    box-shadow: 0 0 5px 5px #fff9f0;
+  }
+  100% {
+    box-shadow: 0 0 0px 0px #fff9f0;
+  }
 }
 
 .players-turn-text{

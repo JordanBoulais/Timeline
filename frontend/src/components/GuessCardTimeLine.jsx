@@ -19,11 +19,25 @@ class GuessCardTimeLine extends React.Component {
 
     render(){
 
-        let fontSize =25 - this.state.title.length * 0.3
+    let fontSize = 25 - this.state.title.length * 0.3
 
+    let index = this.props.index
+    let overTile = this.props.overTile
+
+    let xOffset = 0;
+
+    if (index === overTile){
+        xOffset = 5;
+    } else if (index  === (overTile - 1)){
+        xOffset = -5;
+    }
 
     return(
-        <div className="guess-card-timeline">
+        <div className="guess-card-timeline"
+            style={{
+                transform : `translate(${xOffset}px, 0px)`
+            }}
+        >
 
             <div className="bg-image"
                  style={{

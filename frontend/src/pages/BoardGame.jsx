@@ -13,6 +13,8 @@ import "../css/Utils.css"
 import React from "react";
 import {NavigateWrapper} from "./NavigateWrapper.jsx";
 import { WebSocketContextObj } from './WebSocketContext.jsx'
+import {DndContext} from "@dnd-kit/core";
+import PlayersTurn from "../components/PlayersTurn.jsx";
 
 class BoardGame extends React.Component{
     static contextType = WebSocketContextObj;
@@ -32,9 +34,9 @@ class BoardGame extends React.Component{
             players : [],
             bg_color : [Math.random()*255, Math.random()*255, Math.random()*255],
             isOver : false,
-            winner : "",
+            winners : [],
             player_left: "",
-            new_to_hand : ""
+            overTile : -9999999
         }
         this.ws = null;
     }
@@ -95,10 +97,9 @@ class BoardGame extends React.Component{
                 playersTurn : response.data.players_turn,
                 rows : rows,
                 isOver : false,
-                winner : "",
+                winners : [],
                 player_left: "",
-                new_to_hand : "",
-                hint_tiles : []
+                hint_tiles : [],
             });
           } catch (error) {
             alert(error);
@@ -132,7 +133,7 @@ class BoardGame extends React.Component{
                         rowCount : rows.length,
                         rows : rows,
                         isOver : data.is_over,
-                        winner : data.winner
+                        winners: data.winners
                     })
 
                 this.checkGameState()
@@ -155,7 +156,14 @@ class BoardGame extends React.Component{
                     {
                     hint_tiles : data.hint_tiles
                     }
-                )}
+                )
+                this.updateHandCards();
+            }
+            else if (data.type === "over_tile"){
+                this.setState({
+                    overTile : data.over_tile
+                })
+            }
             // Check if game is over
             else if (data.type === "check_game_state") {
                 if (data.game_is_over){
@@ -165,7 +173,7 @@ class BoardGame extends React.Component{
                                 gameId: this.state.gameId,
                                 host: this.state.host,
                                 player: this.state.player,
-                                players: []
+                                players: this.state.players
                             }
                         });
                     }, 3000);
@@ -222,6 +230,60 @@ class BoardGame extends React.Component{
 
     }
 
+  handleDragStart = async (event) => {
+    const { active } = event;
+    const card_data = JSON.parse(active.id);
+
+    // Need to fix ask hint
+
+      let message = {
+        type: "select_card",
+        player_name : this.state.player,
+        card_title: card_data.title
+    };
+
+    this.ws.send(JSON.stringify(message))
+
+    await this.updateHandCards()
+  }
+
+handleDragEnd = async (event) => {
+  const { active, over } = event;
+
+  try {
+    const tileData = JSON.parse(over.id);
+
+    const message = {
+      type: "place_card",
+      tile_index: tileData.index
+    };
+
+    this.ws.send(JSON.stringify(message));
+  } catch (error) {
+  }
+
+  // Send follow-up message regardless of drop
+  this.ws.send(
+    JSON.stringify({
+      type: "over_tile",
+      over_tile: -999999
+    })
+  );
+};
+
+  handleDragOver = async (event) => {
+    const { active, over } = event;
+
+    let tileData = JSON.parse(over.id);
+
+    const message = {
+    type: "over_tile",
+    over_tile : tileData.index
+    }
+
+    this.ws.send(JSON.stringify(message))
+  }
+
     render() {
 
         const {gameId, timeline, hands, player, playersTurn, rows, rowCount} = this.state;
@@ -237,7 +299,7 @@ class BoardGame extends React.Component{
         const hand = this.state.hands[player];
         const isPlayersTurn = (player === playersTurn)
 
-        const winner = (this.state.isOver && this.state.winner !== "");
+        const winners = (this.state.isOver && this.state.winners.length !== 0);
         const left = (this.state.isOver && this.state.player_left !== "");
 
         // Display Hands here
@@ -247,7 +309,7 @@ class BoardGame extends React.Component{
 
                 <div className="bg-color"
                      style={{
-                         backgroundColor : `rgb(${this.state.bg_color[0]},
+                         backgroundColor: `rgb(${this.state.bg_color[0]},
                                             ${this.state.bg_color[1]},
                                              ${this.state.bg_color[2]})`
                      }}
@@ -255,34 +317,61 @@ class BoardGame extends React.Component{
 
                 <RandomLineBackground/>
 
-                    {/*<TimeLine cards={[{title : "sasa", year : 1995}]}/>*/}
-                    <TimeLine   cards={timeline.cards} gameId={gameId}
-                                hintTiles={this.state.hint_tiles}
-                                isPlayersTurn={isPlayersTurn}
-                                handleTileClick={this.handleTileClick}
-                                rows={rows}
-                                rowCount={rowCount}
+                <div className="horizontal-div"
+                     style={{
+                         position: "absolute",
+                         top: "10px",
+                         userSelect: false
+                     }}
+                >
+                    {Object.values(hands).map((hand, index) =>
+                        (<PlayersTurn
+                                winners={this.state.winners}
+                                key={index}
+                                playersTurn={playersTurn}
+                                player={hand.player.name}
+                                cardsNum={hand.cards.length}
+                            />
+                        ))}
+                </div>
+
+
+                <DndContext
+                    onDragStart={this.handleDragStart}
+                    onDragEnd={this.handleDragEnd}
+                    onDragOver={this.handleDragOver}
+                >
+
+                    <TimeLine cards={timeline.cards} gameId={gameId}
+                              hintTiles={this.state.hint_tiles}
+                              isPlayersTurn={isPlayersTurn}
+                              handleTileClick={this.handleTileClick}
+                              rows={rows}
+                              rowCount={rowCount}
+                              overTile={this.state.overTile}
                     />
-                    <Hand   gameId={gameId}
-                            player_name={hand.player.name}
-                            cards={hand.cards}
-                            updateHandCards={this.updateHandCards}
-                            Hints={hand.hints}
-                            setHintTiles={this.setHintTiles}
-                            isPlayersTurn={isPlayersTurn}
-                            hands={this.state.hands}
-                            playersTurn={this.state.playersTurn}
-                            new_to_hand={hand.new_to_hand}
+                    <Hand gameId={gameId}
+                          player_name={hand.player.name}
+                          cards={hand.cards}
+                          Hints={hand.hints}
+                          setHintTiles={this.setHintTiles}
+                          isPlayersTurn={isPlayersTurn}
+                          hands={this.state.hands}
+                          playersTurn={this.state.playersTurn}
+                          new_to_hand={hand.new_to_hand}
                     />
+                </DndContext>
                 <WinnerPopUp
-                    isVisible={winner}
-                    winner={this.state.winner}
+                    isVisible={winners}
+                    winners={this.state.winners}
                 />
                 <LeftPopUp
                     isVisible={left}
                     player_left={this.state.player_left}
                 />
-                </div>
-                )}}
+            </div>
+        )
+    }
+}
 
 export default NavigateWrapper(BoardGame)

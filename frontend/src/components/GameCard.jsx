@@ -23,7 +23,7 @@ class GameCard extends React.Component {
             onClick={() => this.props.handleGameCardClick(this.props.game)}
         >
             <p className="custom-label">Host : {this.props.game.host.name}</p>
-            <p className="custom-label">ID : {this.props.game.id}</p>
+            <p className="custom-label">Players : {this.props.game.players.length}/4</p>
             <p className="custom-label">Password : {password}</p>
         </div>
     );

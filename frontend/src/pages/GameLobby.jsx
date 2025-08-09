@@ -6,9 +6,11 @@ import {NavigateWrapper} from "./NavigateWrapper.jsx";
 import RandomLineBackground from "../components/RandomLineBackground.jsx";
 import SeparatorLine from "../components/SeparatorLine.jsx";
 import LeaveButton from "../components/LeaveButton.jsx";
+import JoinPopUp from "../components/GameLobbyPopUp.jsx";
 
 import api from "../services/api.js";
 import { WebSocketContextObj } from './WebSocketContext.jsx';
+import GameLobbyPopUp from "../components/GameLobbyPopUp.jsx";
 
 
 class GameLobby extends React.Component{
@@ -26,7 +28,9 @@ class GameLobby extends React.Component{
             hand_size : 5,
             hints : 1,
             bg_color : [Math.random()*255, Math.random()*255, Math.random()*255],
-            password: ""
+            password: "",
+            lastJoin : "",
+            lastLeft : "",
         }
         this.ws = null;
     }
@@ -53,7 +57,9 @@ class GameLobby extends React.Component{
                                     hand_size : response.data.hand_size,
                                     hints : response.data.hints,
                                     password : response.data.password,
-                                    selected_deck : response.data.decks[0]
+                                    selected_deck : response.data.decks[0],
+                                    players : response.data.players,
+                                    host : response.data.host.name
                         });
             } catch (error) {
                 alert(error)
@@ -62,7 +68,7 @@ class GameLobby extends React.Component{
             }
         };
 
-        get_lobby_init_values(gameId);
+    get_lobby_init_values(gameId);
 
     // Init websocket
     if (this.ws == null){
@@ -76,14 +82,16 @@ class GameLobby extends React.Component{
       if (data.type === "player_joined") {
         this.setState({
             players: data.players,
-            host : data.host.name
+            host : data.host.name,
+            lastJoin : data.player_joined
         });
       }
       // Player has left
     else if (data.type === "player_left") {
         this.setState({
             players : data.players,
-            host : data.host.name
+            host : data.host.name,
+            lastLeft : data.player_left
         })}
       else if (data.type === "input_updated") {
         this.setState({   selected_deck: data.selected_deck,
@@ -104,22 +112,24 @@ class GameLobby extends React.Component{
 
       }};
 
-    const waitForSocketConnection = (socket, callback) => {
-        const interval = setInterval(() => {
-            if (socket.readyState === WebSocket.OPEN) {
-                clearInterval(interval);
-                callback();
-            }
-        }, 100);
-    };
-
-    waitForSocketConnection(this.ws, () => {
-        let message =
-            {type: "player_joined"
-            };
-        this.ws.send(JSON.stringify(message));
-    });
-
+    // const waitForSocketConnection = (socket, callback) => {
+    //     const interval = setInterval(() => {
+    //         if (socket.readyState === WebSocket.OPEN) {
+    //             clearInterval(interval);
+    //             callback();
+    //         }
+    //     }, 100);
+    // };
+    //
+    // waitForSocketConnection(this.ws, () => {
+    //     let message =
+    //         {
+    //             type: "player_joined",
+    //             player_joined : ""
+    //         };
+    //     this.ws.send(JSON.stringify(message));
+    //
+    // });
     };
 
 
@@ -206,15 +216,31 @@ class GameLobby extends React.Component{
           {});
     }
 
+    resetLastJoinLeft = () => {
+        this.setState({lastJoin : "",
+                            lastLeft : ""
+        })
+    }
+
     render() {
 
-        let {gameId, players, decks, hand_size, hints, host, player} = this.state;
+        let {gameId, players, decks, hand_size, hints, host, player, lastJoin, lastLeft} = this.state;
 
         let is_host = (host === player);
 
         if (players.length === 0){
             return;
         }
+
+        let message = "";
+        if (lastJoin !== "" && lastJoin !== player){
+            message = `${lastJoin} Has Joined!`
+
+        } else if (lastLeft !== "" && lastLeft !== player){
+            message = `${lastLeft} Has Left!`
+        }
+
+        let PopUpIsVisible = message !== "";
 
         return (
             <div className="game-lobby">
@@ -314,6 +340,13 @@ class GameLobby extends React.Component{
                         handleLeave={this.handleLeave}
                     />
                 </div>
+
+                <GameLobbyPopUp
+                    reset={this.resetLastJoinLeft}
+                    isVisible={PopUpIsVisible}
+                    message={message}
+                />
+
             </div>
         )
     }

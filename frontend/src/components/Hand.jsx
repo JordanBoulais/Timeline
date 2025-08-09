@@ -5,6 +5,9 @@ import React, {useEffect} from "react";
 import api from "../services/api.js";
 import HintButton from "../components/HintButton.jsx";
 import PlayersTurn from "./PlayersTurn.jsx";
+import DraggableCardWrapper from "./DraggableCardWrapper.jsx";
+import {DndContext} from "@dnd-kit/core";
+import SeparatorLine from "./SeparatorLine.jsx";
 
 class Hand extends React.Component{
 
@@ -14,14 +17,11 @@ class Hand extends React.Component{
 
         this.state = {
             cards : props.cards,
-            updateHandCards : props.updateHandCards,
             setHintTiles : props.setHintTiles
         }
     }
 
-  handleCardClick = () => {
-    this.state.updateHandCards()
-  };
+
 
     render(){
 
@@ -32,21 +32,23 @@ class Hand extends React.Component{
 
         return (
             <div className="hand-container">
+
+                {/*<p className="custom-label">{this.props.player_name}</p>*/}
+
                 <div className="hand">
-                    {cards.map((card) =>
-                        (<GuessCardHand
-                                key={`${card.title}-${card.year}`}
-                                title={card.title}
-                                year={card.year}
-                                img={card.img}
-                                new_to_hand={card.title === this.props.new_to_hand}
-                                player_name={this.props.player_name}
-                                gameId={this.props.gameId}
-                                selected={card.selected}
-                                handCallBack={this.handleCardClick}
-                                isPlayersTurn={this.props.isPlayersTurn}
-                            />
-                        ))}
+                    {cards.map((card) => (
+                        <DraggableCardWrapper
+                            key={`${card.title}-${card.year}`}
+                            title={card.title}
+                            year={card.year}
+                            img={card.img}
+                            new_to_hand={card.title === this.props.new_to_hand}
+                            player_name={this.props.player_name}
+                            gameId={this.props.gameId}
+                            selected={card.selected}
+                            isPlayersTurn={this.props.isPlayersTurn}
+                        />
+                    ))}
                 </div>
 
                 <HintButton
@@ -56,16 +58,6 @@ class Hand extends React.Component{
                     gameId={this.props.gameId}
                     isPlayersTurn={this.props.isPlayersTurn}
                 />
-
-                <div className="horizontal-div">
-                    {hands.map((hand) =>
-                        (<PlayersTurn
-                                playersTurn={this.props.playersTurn}
-                                player={hand.player.name}
-                                cardsNum={hand.cards.length}
-                            />
-                        ))}
-                </div>
 
             </div>
         )

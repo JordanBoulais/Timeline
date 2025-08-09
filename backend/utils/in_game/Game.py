@@ -1,3 +1,5 @@
+import copy
+
 from . import Timeline, Card
 from ..Models import GameModel
 
@@ -21,6 +23,7 @@ class Game():
         self.players_orders = []
         self.hand_size = 5
         self.hints = 0
+        self.discarded_cards = []
 
         # In Game
         self.hands = {}
@@ -30,7 +33,7 @@ class Game():
 
         self.in_game = False
         self.is_over = False
-        self.winner = None
+        self.winners = []
         self.left = None
 
     def set_default(self):
@@ -42,7 +45,7 @@ class Game():
         self.players_orders = []
         self.selected_card = None
         self.is_over = False
-        self.winner = ""
+        self.winners = []
         self.left = None
         self.hand_size = 5
         self.hints = 0
@@ -72,7 +75,7 @@ class Game():
     def set_timeline(self, timeline):
         self.timeline = timeline
 
-    def  set_players_orders(self, players_orders):
+    def set_players_orders(self, players_orders):
         self.players_orders = players_orders
 
     def set_players_turn(self, player):
@@ -81,8 +84,8 @@ class Game():
     def set_is_over(self, over):
         self.is_over = over
 
-    def set_winner(self, winner):
-        self.winner = winner
+    def add_winner(self, winner):
+        self.winners.append(winner)
 
     def add_player(self, player):
         self.players.append(player)
@@ -162,8 +165,31 @@ class Game():
     def get_is_over(self):
         return self.is_over
 
-    def get_winner(self):
-        return self.winner
+    def get_winners(self):
+        return self.winners
+
+    def get_winners_str(self):
+
+        if len(self.winners) == 1:
+            return f"{self.winners[0].get_name()} Has won!!!"
+        if len(self.winners) > 1:
+            return ", ".join([w.get_name() for w in self.winners]) + " Have won!!!"
+
+        return ""
+
+    def add_discarded_card(self, card):
+        self.discarded_cards.append(card)
+
+    def get_discarded_cards(self):
+        return self.discarded_cards
+
+    def get_selected_deck(self):
+        return self.selected_deck
+
+    def dump_discarded_cards(self):
+        discarded_cards = copy.deepcopy(self.discarded_cards)
+        self.discarded_cards = []
+        return discarded_cards
 
     def set_host(self, host):
         self.host = host

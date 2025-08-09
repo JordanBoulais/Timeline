@@ -1,4 +1,4 @@
-.guess-card-hand, .guess-card-hand-disabled, .guess-card-hand-new {
+.guess-card-hand, .guess-card-hand-new {
     position: relative;
     border-radius: 8px;
     overflow: hidden;
@@ -63,7 +63,7 @@
     cursor: pointer;
 }
 
-.guess-card-hand-selected, .guess-card-hand-selected-disabled {
+.guess-card-hand-selected{
     position: relative;
     border-radius: 8px;
     overflow: hidden;
@@ -80,11 +80,6 @@
     flex-grow: 0;     /* Prevent growing in flexbox */
     object-fit: contain; /* if it's an image or media */
     border: 2px solid white;
-}
-
-.guess-card-hand-disabled, .guess-card-hand-selected-disabled{
-  pointer-events: none;  /* Disables mouse interaction */
-  user-select: none;     /* Prevents text selection */
 }
 
 .guess-card-hand-selected:hover {

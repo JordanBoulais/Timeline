@@ -1,5 +1,5 @@
 import "../css/Tile.css"
-import React from "react";
+import React, {useLayoutEffect} from "react";
 import api from "../services/api.js";
 
 class Tile extends React.Component{
@@ -12,13 +12,13 @@ class Tile extends React.Component{
     }
 
      handleClick = async (e) => {
-
         this.state.timelineCallBack(this.props.index)
         };
 
     render(){
 
         let index = this.props.index
+        let overTile=this.props.overTile
         let is_hint = this.props.hint_tiles.includes(index);
         let className = "tile";
 
@@ -30,9 +30,13 @@ class Tile extends React.Component{
             className = "hint-tile-disabled"
         }
 
+        let tileStyle = (index !== overTile) ? {} : { width: '5px' };
         return (
             <div className={className}
-                 onClick={this.handleClick}>
+                 ref={this.props.setNodeRef}
+                 onClick={this.handleClick}
+                 style={tileStyle}
+            >
             </div>
         ) };
 

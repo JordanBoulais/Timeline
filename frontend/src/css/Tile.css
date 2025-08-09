@@ -1,12 +1,11 @@
 .tile, .tile-disabled, .hint-tile, .hint-tile-disabled {
-    width: 30px;
+    width: 1px;
     height: 100px;
     opacity: 0.05;
     background-color: #ffffff;
     flex-shrink: 0;   /* Prevent shrinking in flexbox */
     flex-grow: 0;     /* Prevent growing in flexbox */
     object-fit: contain; /* if it's an image or media */
-    border-radius: 8px;
 }
 
 @keyframes glowOpacity {
@@ -29,6 +28,8 @@
 .hint-tile {
   background-color: #faede5;
   animation: glowOpacity 2s infinite ease-in-out;
+    user-select: none;
+    width: 5px;
 }
 
 .hint-tile-disabled {
@@ -36,6 +37,7 @@
     animation: glowOpacity 2s infinite ease-in-out;
     pointer-events: none;
     user-select: none;     /* Prevents text selection */
+    width: 5px;
 }
 
 .tile:hover, .hint-tile:hover {

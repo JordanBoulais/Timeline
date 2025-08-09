@@ -18,7 +18,7 @@ render() {
 
     let rows = this.props.rows;
     let rowCount = this.props.rowCount;
-    let timelinescale = 1 - (rowCount - 1) * 0.05;
+    let timelinescale = 1 - (rowCount - 1) * 0.025;
     let translateY = 15 + (rowCount - 1) * 5;
 
     return (
@@ -35,6 +35,7 @@ render() {
                     handleTileClick={this.props.handleTileClick}
                     hintTiles={this.props.hintTiles}
                     isPlayersTurn={this.props.isPlayersTurn}
+                    overTile={this.props.overTile}
                 />
             ))}
         </div>

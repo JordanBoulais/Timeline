@@ -16,6 +16,10 @@ class PlayersTurn extends React.Component{
 
         let className = isPlayersTurn ? "players-turn" : "not-players-turn"
 
+        if (this.props.winners.includes(this.props.player)){
+            className = "players-won"
+        }
+
         return(
             <div className={className}>
                 <p className="players-turn-text">{this.props.player}</p>

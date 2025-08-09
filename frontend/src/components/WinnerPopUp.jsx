@@ -19,7 +19,7 @@ class WinnerPopUp extends React.Component {
 
       componentDidUpdate(prevProps, prevState) {
     // Check if a specific prop has changed
-    if (this.props.winner !== prevProps.winner) {
+    if (this.props.isVisible !== prevProps.isVisible) {
         this.audio.play();
     }
   }
@@ -27,10 +27,19 @@ class WinnerPopUp extends React.Component {
   render() {
     if (!this.props.isVisible) return null; // don't render if not visible
 
+
+    let winner_str = "";
+    if (this.props.winners.length === 1){
+        winner_str = `${this.props.winners[0]} Has won!`
+    } else{
+        winner_str = `${this.props.winners.join(", ")} have won!`
+    }
+
+
     return (
       <div className="popup">
               <label>
-                  {this.props.winner} Has Won!!!
+                  {winner_str}
               </label>
       </div>
     );

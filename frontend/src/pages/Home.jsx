@@ -80,6 +80,9 @@ class Home extends React.Component{
             else if (response.data.id === "FULL"){
                 alert("Game is already full (4 Players Max.)");
                 return;
+            } else if (response.data.id === "INGAME"){
+                alert("In Game.\nWait for it to end.");
+                return;
             }
 
 
