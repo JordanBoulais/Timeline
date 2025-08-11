@@ -1,27 +1,18 @@
 import "../css/TimeLine.css"
 import React from "react";
 import TimeLineRow from "./TimeLineRow.jsx";
-import api from "../services/api.js";
 
-class TimeLine extends React.Component {
+function TimeLine({rows,
+                  rowCount,
+                  handleTileClick,
+                  hintTiles,
+                  isPlayersTurn,
+                  overTile}){
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            gameId : props.gameId,
-        }
-    }
-
-
-
-render() {
-
-    let rows = this.props.rows;
-    let rowCount = this.props.rowCount;
     let timelinescale = 1 - (rowCount - 1) * 0.025;
     let translateY = 15 + (rowCount - 1) * 5;
 
-    return (
+        return (
         <div className="timeline"
         style={{ transform: `translateY(${translateY}vh) scale(${timelinescale})` }}
         >
@@ -31,16 +22,14 @@ render() {
                     key={rowIndex}
                     startIndex={rowIndex}
                     cards={row}
-                    game_id={this.state.gameId}
-                    handleTileClick={this.props.handleTileClick}
-                    hintTiles={this.props.hintTiles}
-                    isPlayersTurn={this.props.isPlayersTurn}
-                    overTile={this.props.overTile}
+                    handleTileClick={handleTileClick}
+                    hintTiles={hintTiles}
+                    isPlayersTurn={isPlayersTurn}
+                    overTile={overTile}
                 />
             ))}
         </div>
     );
-}}
-
+}
 
 export default TimeLine;

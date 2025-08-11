@@ -18,6 +18,11 @@ class GameLobby extends React.Component{
 
     constructor(props){
         super(props);
+        this.setDefaultStates()
+        this.ws = null;
+    }
+
+    setDefaultStates = () => {
         this.state = {
             player : "",
             gameId : "",
@@ -32,50 +37,47 @@ class GameLobby extends React.Component{
             lastJoin : "",
             lastLeft : "",
         }
-        this.ws = null;
+    }
+
+    handlePageReload = (event) => {
+        localStorage.setItem("gameID", this.state.gameId);
+        localStorage.setItem("player", this.state.player);
+        const message = {
+          type: "someone_page_refresh",
+        };
+
+        this.ws.send(JSON.stringify(message));
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener("popstate", this.handleLeave);
+        window.removeEventListener("beforeunload", this.handlePageReload);
+        this.setDefaultStates()
     }
 
     componentDidMount() {
         const {state} = this.props.location;
-        const gameId = state?.gameId || "";
-        const player = state?.player || "";
+        const gameId = state?.gameId || localStorage.getItem("gameID") || "";
+        const player = state?.player || localStorage.getItem("player") || "";
+
+        localStorage.setItem("gameID", "");
+        localStorage.setItem("player", "");
+        window.history.pushState(null, null, window.location.href);
+        window.addEventListener("popstate", this.handleLeave);
+        window.addEventListener("beforeunload", this.handlePageReload);
 
         this.setState({
             player : player,
         });
 
-        const get_lobby_init_values = async (gameId) => {
-            try {
-                const response = await api.get("/init_lobby",  {
-                  params: {
-                    game_id: gameId
-                  },
-                })
-
-                this.setState({ gameId : gameId,
-                                    decks : response.data.decks,
-                                    hand_size : response.data.hand_size,
-                                    hints : response.data.hints,
-                                    password : response.data.password,
-                                    selected_deck : response.data.decks[0],
-                                    players : response.data.players,
-                                    host : response.data.host.name
-                        });
-            } catch (error) {
-                alert(error)
-                console.error('Error Initiating lobby')
-                return
-            }
-        };
-
-    get_lobby_init_values(gameId);
-
-    // Init websocket
-    if (this.ws == null){
-        this.context.connect(`ws://localhost:8000/ws/game/${gameId}/${player}`);
-        this.ws = this.context.getSocket();
-    }
-
+        // Init websocket
+        try{
+        if (this.ws == null){
+            this.context.connect(`ws://localhost:8000/ws/game/${gameId}/${player}`);
+            this.ws = this.context.getSocket();
+        }} catch (e){
+            this.props.navigate("/");
+        }
     // Websockets communications
     this.ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -109,27 +111,36 @@ class GameLobby extends React.Component{
                       player: this.state.player
                   }
               });
-
       }};
 
-    // const waitForSocketConnection = (socket, callback) => {
-    //     const interval = setInterval(() => {
-    //         if (socket.readyState === WebSocket.OPEN) {
-    //             clearInterval(interval);
-    //             callback();
-    //         }
-    //     }, 100);
-    // };
-    //
-    // waitForSocketConnection(this.ws, () => {
-    //     let message =
-    //         {
-    //             type: "player_joined",
-    //             player_joined : ""
-    //         };
-    //     this.ws.send(JSON.stringify(message));
-    //
-    // });
+                const get_lobby_init_values = async (gameId) => {
+            try {
+                const response = await api.get("/init_lobby",  {
+                  params: {
+                    game_id: gameId
+                  },
+                })
+
+                this.setState({ gameId : gameId,
+                                    decks : response.data.decks,
+                                    hand_size : response.data.hand_size,
+                                    hints : response.data.hints,
+                                    password : response.data.password,
+                                    selected_deck : response.data.decks[0],
+                                    players : response.data.players,
+                                    host : response.data.host.name
+                        });
+            } catch (error) {
+                alert(error)
+                console.error('Error Initiating lobby')
+                return
+            }
+        };
+
+    get_lobby_init_values(gameId);
+
+
+
     };
 
 

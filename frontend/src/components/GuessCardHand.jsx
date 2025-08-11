@@ -2,35 +2,24 @@ import React, {useState} from "react";
 import "../css/GuessCard.css"
 import imageMap from "./ImageMap.jsx"
 
-
-class GuessCardHand extends React.Component {
-
-    constructor(props) {
-        super(props);
-            this.state = {
-                gameId : props.gameId,
-                player_name : props.player_name,
-                title: props.title,
-                year: props.year,
-                img: props.img,
-                handCallBack : props.handCallBack,
-            };
-    }
-
-    render(){
+function GuessCardHand({new_to_hand,
+                           selected,
+                           isPlayersTurn,
+                           title,
+                            img}){
 
     let className = "guess-card-hand";
 
-    if (this.props.new_to_hand){
+    if (new_to_hand){
         className = "guess-card-hand-new"
     }
-    else if (this.props.selected && this.props.isPlayersTurn){
+    else if (selected && isPlayersTurn){
         className = "guess-card-hand-selected"
     }
 
-    let fontSize =25 - this.props.title.length * 0.3;
+    let fontSize =25 - title.length * 0.3;
 
-    let disabled = (this.props.isPlayersTurn) ? {} : {
+    let disabled = (isPlayersTurn) ? {} : {
         pointerEvents: "none",
         userSelect: "none"
     }
@@ -42,21 +31,17 @@ class GuessCardHand extends React.Component {
 
             <div className="bg-image"
                  style={{
-                backgroundImage: `url(${imageMap[this.props.img]})`
+                backgroundImage: `url(${imageMap[img]})`
              }}/>
-
                     <div className=""
                     style={{fontSize : `${fontSize}px`,
                             top : "20%",
                             userSelect: "none",
                             }}
-                    >{this.props.title}</div>
+                    >{title}</div>
 
         </div>
     )
-    };
-
 }
-
 
 export default GuessCardHand

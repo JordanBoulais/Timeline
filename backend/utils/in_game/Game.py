@@ -30,6 +30,7 @@ class Game():
         self.timeline = Timeline(Card("", 99999999))
         self.players_turn = 0
         self.selected_card = None
+        self.someone_page_refresh = False
 
         self.in_game = False
         self.is_over = False
@@ -49,9 +50,18 @@ class Game():
         self.left = None
         self.hand_size = 5
         self.hints = 0
+        self.someone_page_refresh = False
+
+    def get_player_by_name(self, name):
+        for player in self.players:
+            if player.name == name:
+                return player
 
     def set_hand_size(self, size):
         self.hand_size = size
+
+    def set_someone_page_refresh(self, value):
+        self.someone_page_refresh = value
 
     def set_hints(self, hints):
         self.hints = hints
@@ -125,6 +135,9 @@ class Game():
 
     def get_hands(self):
         return self.hands
+
+    def get_someone_page_refresh(self):
+        return self.someone_page_refresh
 
     def get_hands_model(self):
 

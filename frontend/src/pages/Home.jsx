@@ -83,8 +83,10 @@ class Home extends React.Component{
             } else if (response.data.id === "INGAME"){
                 alert("In Game.\nWait for it to end.");
                 return;
+            } else if (response.data.id === "PLAYERALREADYEXISTS"){
+                alert(`Player with name '${player}' already exits in this game.\nPlease change name.`);
+                return;
             }
-
 
             // Navigate to game lobby
             this.props.navigate("/game_lobby",

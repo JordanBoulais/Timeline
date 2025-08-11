@@ -59,16 +59,16 @@ class BoardGame extends React.Component{
     };
 
     componentDidMount() {
-      const { state } = this.props.location || {};
-      const gameId = state?.gameId || null;
-      const player = state?.player || null;
+    const { state } = this.props.location || {};
+    const gameId = state?.gameId || localStorage.getItem("gameID") || "";
+    const player = state?.player || localStorage.getItem("player") || "";
 
     // Preventing from changing page
+    localStorage.setItem("gameID", "");
+    localStorage.setItem("player", "");
     window.history.pushState(null, null, window.location.href);
-    this.handlePopState = () => {
-      window.history.pushState(null, null, window.location.href);
-    };
-    window.addEventListener('popstate', this.handlePopState);
+    window.addEventListener("popstate", this.handleBackButton);
+    window.addEventListener("beforeunload", this.handlePageReload);
 
       this.setState(
         {
@@ -171,9 +171,7 @@ class BoardGame extends React.Component{
                         this.props.navigate("/game_lobby", {
                             state: {
                                 gameId: this.state.gameId,
-                                host: this.state.host,
                                 player: this.state.player,
-                                players: this.state.players
                             }
                         });
                     }, 3000);
@@ -182,8 +180,23 @@ class BoardGame extends React.Component{
             };
 
       componentWillUnmount() {
-    window.removeEventListener('popstate', this.handlePopState);
+        window.removeEventListener("popstate", this.handleLeave);
+        window.removeEventListener("beforeunload", this.handlePageReload);
   }
+
+    handleBackButton = (event) => {
+    window.history.pushState(null, null, window.location.href);
+  };
+
+    handlePageReload = (event) => {
+        localStorage.setItem("gameID", this.state.gameId);
+        localStorage.setItem("player", this.state.player);
+        const message = {
+          type: "someone_page_refresh",
+        };
+
+        this.ws.send(JSON.stringify(message));
+    }
 
     handleTileClick = async (tileIndex) => {
         const message = {

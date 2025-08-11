@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 
-const SeparatorLine = () => {
+function SeparatorLine(){
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -15,7 +15,6 @@ const SeparatorLine = () => {
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
 
-    //ctx.globalAlpha = Math.random() * 0.01;
     ctx.stroke();
 
   }, []);

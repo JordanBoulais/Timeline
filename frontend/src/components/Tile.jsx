@@ -1,45 +1,32 @@
 import "../css/Tile.css"
-import React, {useLayoutEffect} from "react";
-import api from "../services/api.js";
+import React from "react";
 
-class Tile extends React.Component{
+function Tile({timelineCallBack, index, overTile, isPlayersTurn, setNodeRef, hint_tiles}){
 
-    constructor(props){
-        super(props);
-        this.state = {
-            timelineCallBack : props.timelineCallBack
-        }
+    const handleClick = async (e) => {
+        timelineCallBack(index)
+    };
+
+    let is_hint = hint_tiles.includes(index);
+    let className = "tile";
+
+    if ((! is_hint) && (! isPlayersTurn)){
+        className = "tile-disabled"
+    } else if (is_hint && isPlayersTurn){
+        className = "hint-tile"
+    } else if (is_hint && (! isPlayersTurn)){
+        className = "hint-tile-disabled"
     }
 
-     handleClick = async (e) => {
-        this.state.timelineCallBack(this.props.index)
-        };
-
-    render(){
-
-        let index = this.props.index
-        let overTile=this.props.overTile
-        let is_hint = this.props.hint_tiles.includes(index);
-        let className = "tile";
-
-        if ((! is_hint) && (! this.props.isPlayersTurn)){
-            className = "tile-disabled"
-        } else if (is_hint && this.props.isPlayersTurn){
-            className = "hint-tile"
-        } else if (is_hint && (! this.props.isPlayersTurn)){
-            className = "hint-tile-disabled"
-        }
-
-        let tileStyle = (index !== overTile) ? {} : { width: '5px' };
-        return (
-            <div className={className}
-                 ref={this.props.setNodeRef}
-                 onClick={this.handleClick}
-                 style={tileStyle}
-            >
-            </div>
-        ) };
-
+    let tileStyle = (index !== overTile) ? {} : { width: '5px' };
+    return (
+    <div className={className}
+         ref={setNodeRef}
+         onClick={handleClick}
+         style={tileStyle}
+    >
+    </div>
+    )
 }
 
 

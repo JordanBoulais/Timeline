@@ -1,35 +1,21 @@
 import React from "react";
 
-class PlayersTurn extends React.Component{
+function PlayersTurn({playersTurn, winners, player, cardsNum}){
 
-    constructor(props){
-        super(props);
-        this.state = {
-        }
-    }
-
-
-
-    render(){
-
-        let isPlayersTurn = this.props.playersTurn === this.props.player;
+    let isPlayersTurn = playersTurn === player;
 
         let className = isPlayersTurn ? "players-turn" : "not-players-turn"
 
-        if (this.props.winners.includes(this.props.player)){
+        if (winners.includes(player)){
             className = "players-won"
         }
 
         return(
             <div className={className}>
-                <p className="players-turn-text">{this.props.player}</p>
-                <p className="players-turn-text">{this.props.cardsNum}</p>
+                <p className="players-turn-text">{player}</p>
+                <p className="players-turn-text">{cardsNum}</p>
             </div>
         );
-    }
-
-
 }
-
 
 export default PlayersTurn

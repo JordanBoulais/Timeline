@@ -42,6 +42,8 @@ def create_game(players, host):
     # Adding to db
     games_db[game_id] = game
 
+    print(f"Created game with id: {game_id}")
+
     return game
 
 # ------------------- IN GAME -------------------
@@ -131,7 +133,8 @@ async def game_join(game_model: GameModel):
         return Game("FULL", []).to_model()
     elif game.get_in_game():
         return Game("INGAME", []).to_model()
-
+    elif game_model.current_player.name in [p.get_name() for p in game.get_players()]:
+        return Game("PLAYERALREADYEXISTS", []).to_model()
 
     return game.to_model()
 
@@ -304,27 +307,49 @@ async def select_card(game : Game,
     selected_card = hand.get_selected_card()
     game.set_selected_card(selected_card)
 
+async def set_someone_page_refresh(game, value):
+    game.set_someone_page_refresh(value)
+
+async def get_someone_page_refresh(game : Game):
+
+    return game.get_someone_page_refresh()
+
 @app.websocket("/ws/game/{game_id}/{player_name}")
 async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
     await websocket.accept()
 
-    game = games_db[game_id]
-    player = Player(name=player_name, websocket=websocket)
-    player_db[player_name] = player
-    game.add_player(player)
+    if game_id not in games_db.keys():
+        return
 
-    # Notify everyone in the lobby
-    data = {}
-    data["type"] = "player_joined"
-    data["players"] = game.get_players()
-    data["player_joined"] = player_name
-    await broadcast_game(game, data)
+    game = games_db[game_id]
+
+    # Not creating new player if someone just refreshed browser page
+    if game.get_someone_page_refresh():
+        player = game.get_player_by_name(player_name)
+        player.set_websocket(websocket)
+        await set_someone_page_refresh(game, False)
+    else:
+        player = Player(name=player_name, websocket=websocket, id=str(uuid4()))
+        player_db[player.get_id()] = player
+        game.add_player(player)
+
+        # Notify everyone in the lobby
+        data = {}
+        data["type"] = "player_joined"
+        data["players"] = game.get_players()
+        data["player_joined"] = player_name
+        await broadcast_game(game, data)
 
     try:
         while True:
             data = await websocket.receive_json()
             await broadcast_game(game, data)
     except WebSocketDisconnect:
+
+        # Not updating game if someone just refreshed browser page
+        refreshing = await get_someone_page_refresh(game)
+        if refreshing:
+           return
 
         game.remove_player(player)
         game.set_is_over(True)
@@ -345,7 +370,7 @@ async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
             del games_db[game_id]
 
         # Removing from player database
-        del player_db[player_name]
+        del player_db[player.get_id()]
 
 async def broadcast_game(game: Game, data):
 
@@ -362,12 +387,12 @@ async def broadcast_game(game: Game, data):
         game.set_hand_size(data.get("hand_size"))
         game.set_hints(data.get("hints"))
     elif comm_type == "select_card":
-
-        print(f"selected {data.get("card_title")}")
-
         await select_card(game,
                           data.get("player_name"),
                           data.get("card_title"))
+    elif comm_type == "someone_page_refresh":
+        game.set_someone_page_refresh(True)
+        return
 
     # Communicate with all players
     players = [p.to_model().model_dump() for p in game.get_players()]
@@ -424,6 +449,7 @@ async def broadcast_game(game: Game, data):
                     "type": "over_tile",
                     "over_tile" : data.get("over_tile"),
                 })
+
         except Exception as e:
             print(f"WebSocket send error: {e}")
 

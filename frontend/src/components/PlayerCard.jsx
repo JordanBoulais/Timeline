@@ -1,25 +1,14 @@
 import React from "react";
 
-class PlayerCard extends React.Component{
 
-    constructor(props){
-        super(props);
-        this.state = {
-            name : props.name,
-            img : "",
-        }
-    }
+function PlayerCard({name}){
 
-    render(){
-        return(
+            return(
         <div className="player-card">
-            <p className="player-name">{this.state.name}</p>
+            <p className="player-name">{name}</p>
         </div>
     );
-    }
-
 
 }
-
 
 export default PlayerCard
