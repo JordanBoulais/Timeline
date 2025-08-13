@@ -11,7 +11,7 @@ function Hand({player_name,
               gameId,
               isPlayersTurn,
               Hints,
-              setHintTiles}){
+              askHint}){
 
 
             return (
@@ -36,10 +36,8 @@ function Hand({player_name,
                 </div>
 
                 <HintButton
-                    playerName={player_name}
                     remaining={Hints}
-                    setHintTiles={setHintTiles}
-                    gameId={gameId}
+                    askHint={askHint}
                     isPlayersTurn={isPlayersTurn}
                 />
 

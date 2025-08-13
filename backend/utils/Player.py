@@ -7,15 +7,22 @@ class Player():
         self.name = name
         self.websocket = websocket
         self.id = id
+        self.disconnection = False
 
     def set_websocket(self, websocket):
         self.websocket = websocket
+
+    def set_disconnection(self, disconnection):
+        self.disconnection = disconnection
 
     def get_name(self):
         return self.name
 
     def get_id(self):
         return self.id
+
+    def get_disconnection(self):
+        return self.disconnection
 
     def get_websocket(self):
         return self.websocket

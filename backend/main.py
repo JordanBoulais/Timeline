@@ -1,10 +1,12 @@
 # ==== backend_fastapi.py ====
+import asyncio
 import json
 import os
 import random
 from pathlib import Path
 from uuid import uuid4
 from typing import *
+import time
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -13,7 +15,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from utils.Models import *
 from utils.Player import Player
 from utils.in_game import *
-from utils.utils import *
 
 # --- FRONTEND COMMUNICATION ---
 app = FastAPI()
@@ -307,12 +308,6 @@ async def select_card(game : Game,
     selected_card = hand.get_selected_card()
     game.set_selected_card(selected_card)
 
-async def set_someone_page_refresh(game, value):
-    game.set_someone_page_refresh(value)
-
-async def get_someone_page_refresh(game : Game):
-
-    return game.get_someone_page_refresh()
 
 @app.websocket("/ws/game/{game_id}/{player_name}")
 async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
@@ -323,11 +318,11 @@ async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
 
     game = games_db[game_id]
 
-    # Not creating new player if someone just refreshed browser page
-    if game.get_someone_page_refresh():
-        player = game.get_player_by_name(player_name)
+    # Check for refresh
+    player = game.get_player_by_name(player_name)
+    if player:
         player.set_websocket(websocket)
-        await set_someone_page_refresh(game, False)
+        player.set_disconnection(False)
     else:
         player = Player(name=player_name, websocket=websocket, id=str(uuid4()))
         player_db[player.get_id()] = player
@@ -346,31 +341,35 @@ async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
             await broadcast_game(game, data)
     except WebSocketDisconnect:
 
-        # Not updating game if someone just refreshed browser page
-        refreshing = await get_someone_page_refresh(game)
-        if refreshing:
-           return
+        try:
+            player.set_disconnection(True)
+            await asyncio.sleep(1)
 
-        game.remove_player(player)
-        game.set_is_over(True)
+            if not player.get_disconnection():
+                return
 
-        # If host left, setting new host
-        if len(game.get_players()) > 0:
-            if game.get_host() == player:
-                game.set_host(game.get_players()[0])
+            game.remove_player(player)
+            game.set_is_over(True)
 
-            # broadcast to game
-            data = {
-                "type": "player_left",
-                "player_left": player.get_name()
-            }
-            await broadcast_game(game, data)
-        else:
-            print(f"Deleting game with id: {game_id}")
-            del games_db[game_id]
+            # If host left, setting new host
+            if len(game.get_players()) > 0:
+                if game.get_host() == player:
+                    game.set_host(game.get_players()[0])
 
-        # Removing from player database
-        del player_db[player.get_id()]
+                # broadcast to game
+                data = {
+                    "type": "player_left",
+                    "player_left": player.get_name()
+                }
+                await broadcast_game(game, data)
+            else:
+                print(f"Deleting game with id: {game_id}")
+                del games_db[game_id]
+
+            # Removing from player database
+            del player_db[player.get_id()]
+        except Exception:
+            pass
 
 async def broadcast_game(game: Game, data):
 
@@ -390,9 +389,6 @@ async def broadcast_game(game: Game, data):
         await select_card(game,
                           data.get("player_name"),
                           data.get("card_title"))
-    elif comm_type == "someone_page_refresh":
-        game.set_someone_page_refresh(True)
-        return
 
     # Communicate with all players
     players = [p.to_model().model_dump() for p in game.get_players()]
@@ -449,7 +445,6 @@ async def broadcast_game(game: Game, data):
                     "type": "over_tile",
                     "over_tile" : data.get("over_tile"),
                 })
-
         except Exception as e:
             print(f"WebSocket send error: {e}")
 

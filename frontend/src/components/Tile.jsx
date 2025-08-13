@@ -1,7 +1,12 @@
 import "../css/Tile.css"
 import React from "react";
 
-function Tile({timelineCallBack, index, overTile, isPlayersTurn, setNodeRef, hint_tiles}){
+function Tile({timelineCallBack,
+                  index,
+                  overTile,
+                  isPlayersTurn,
+                  setNodeRef,
+                  hint_tiles}){
 
     const handleClick = async (e) => {
         timelineCallBack(index)

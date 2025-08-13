@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useContext, useEffect, useState} from "react";
 import "../css/GameLobby.css"
 import "../css/Utils.css"
 import PlayerCard from "../components/PlayerCard.jsx";
@@ -13,194 +13,88 @@ import { WebSocketContextObj } from './WebSocketContext.jsx';
 import GameLobbyPopUp from "../components/GameLobbyPopUp.jsx";
 
 
-class GameLobby extends React.Component{
-    static contextType = WebSocketContextObj;
+function GameLobby({navigate, location}){
 
-    constructor(props){
-        super(props);
-        this.setDefaultStates()
-        this.ws = null;
+    const wsContext = useContext(WebSocketContextObj);
+    const wsRef = React.useRef(null);
+
+    const [player, setPlayer] = useState("");
+    const [players, setPlayers] = useState([]);
+    const [gameId, setGameId] = useState("");
+    const [host, setHost] = useState("");
+    const [decks, setDecks] = useState([]);
+    const [selectedDeck, setSelectedDeck] = useState("");
+    const [handSize, setHandSize] = useState(5);
+    const [hints, setHints] = useState(0);
+    const [bgColor, setBgColor] = useState([Math.random()*255, Math.random()*255, Math.random()*255]);
+    const [password, setPassword] = useState("");
+    const [lastJoin, setLastJoin] = useState("");
+    const [lastLeft, setLastLeft] = useState("");
+
+    // const handlePageReload = (event) => {
+    //     localStorage.setItem("gameID", gameId);
+    //     localStorage.setItem("player", player);
+    //     alert("handlePageReload")
+    //     window.removeEventListener("beforeunload", handlePageReload);
+    //     const message = {
+    //         type: "someone_page_refresh",
+    //     };
+    //     wsRef.current.send(JSON.stringify(message));
+    // }
+
+      const handleLeave = () => {
+        wsRef.current.close();
+        navigate("/",
+          {});
     }
 
-    setDefaultStates = () => {
-        this.state = {
-            player : "",
-            gameId : "",
-            host : "",
-            players : [],
-            decks : [],
-            selected_deck : "",
-            hand_size : 5,
-            hints : 1,
-            bg_color : [Math.random()*255, Math.random()*255, Math.random()*255],
-            password: "",
-            lastJoin : "",
-            lastLeft : "",
-        }
-    }
-
-    handlePageReload = (event) => {
-        localStorage.setItem("gameID", this.state.gameId);
-        localStorage.setItem("player", this.state.player);
-        const message = {
-          type: "someone_page_refresh",
-        };
-
-        this.ws.send(JSON.stringify(message));
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener("popstate", this.handleLeave);
-        window.removeEventListener("beforeunload", this.handlePageReload);
-        this.setDefaultStates()
-    }
-
-    componentDidMount() {
-        const {state} = this.props.location;
-        const gameId = state?.gameId || localStorage.getItem("gameID") || "";
-        const player = state?.player || localStorage.getItem("player") || "";
-
-        localStorage.setItem("gameID", "");
-        localStorage.setItem("player", "");
-        window.history.pushState(null, null, window.location.href);
-        window.addEventListener("popstate", this.handleLeave);
-        window.addEventListener("beforeunload", this.handlePageReload);
-
-        this.setState({
-            player : player,
-        });
-
-        // Init websocket
-        try{
-        if (this.ws == null){
-            this.context.connect(`ws://localhost:8000/ws/game/${gameId}/${player}`);
-            this.ws = this.context.getSocket();
-        }} catch (e){
-            this.props.navigate("/");
-        }
-    // Websockets communications
-    this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "player_joined") {
-        this.setState({
-            players: data.players,
-            host : data.host.name,
-            lastJoin : data.player_joined
-        });
-      }
-      // Player has left
-    else if (data.type === "player_left") {
-        this.setState({
-            players : data.players,
-            host : data.host.name,
-            lastLeft : data.player_left
-        })}
-      else if (data.type === "input_updated") {
-        this.setState({   selected_deck: data.selected_deck,
-                                hand_size: data.hand_size,
-                                hints : data.hints,
-                                password : data.password
-        });
-      }
-      else if (data.type === "navigate_to_board_game") {
-          // Navigate to game lobby
-          this.props.navigate("/board_game",
-              {
-                  state: {
-                      gameId: this.state.gameId,
-                      player: this.state.player
-                  }
-              });
-      }};
-
-                const get_lobby_init_values = async (gameId) => {
-            try {
-                const response = await api.get("/init_lobby",  {
-                  params: {
-                    game_id: gameId
-                  },
-                })
-
-                this.setState({ gameId : gameId,
-                                    decks : response.data.decks,
-                                    hand_size : response.data.hand_size,
-                                    hints : response.data.hints,
-                                    password : response.data.password,
-                                    selected_deck : response.data.decks[0],
-                                    players : response.data.players,
-                                    host : response.data.host.name
-                        });
-            } catch (error) {
-                alert(error)
-                console.error('Error Initiating lobby')
-                return
-            }
-        };
-
-    get_lobby_init_values(gameId);
-
-
-
+    const handleDeckSelectChange = (event) => {
+        handleInputChange(gameId, event.target.value, handSize, hints, password)
     };
 
-
-    handleDeckSelectChange = (event) => {
-
-        this.setState({ selected_deck: event.target.value }, () => {
-            this.handleInputChange(); // will now use the updated state
-        });
-
+    const handleStartingCardNumberChange = (event) => {
+        handleInputChange(gameId, selectedDeck, event.target.value, hints, password)
     };
 
-    handleStartingCardNumberChange = (event) => {
-
-        this.setState({ hand_size: parseInt(event.target.value) }, () => {
-            this.handleInputChange(); // will now use the updated state
-        });
-
+    const handleHintsChange = (event) => {
+        handleInputChange(gameId, selectedDeck, handSize, event.target.value, password)
     };
 
-    handleHintsChange = (event) => {
-    this.setState({ hints: parseInt(event.target.value) }, () => {
-        this.handleInputChange(); // will now use the updated state
-    });
+    const handlePasswordChange = (event) => {
+         alert("Password Changed")
+        handleInputChange(gameId, selectedDeck, handSize, hints, event.target.value)
     };
 
-    handlePasswordChange = (event) => {
-        this.setState({ password: event.target.value }, () => {
-        alert("Password Changed")
-        this.handleInputChange(); // will now use the updated state
-    });
-
-    };
-
-    handleInputChange = () => {
+    const handleInputChange = (gameId,
+                               selectedDeck,
+                               handSize,
+                               hints,
+                               password) => {
         const message = {
           type: "input_updated",
-            game_id : this.state.gameId,
-            selected_deck : this.state.selected_deck,
-            hand_size : this.state.hand_size,
-            hints : this.state.hints,
-            password : this.state.password
+            game_id : gameId,
+            selected_deck : selectedDeck,
+            hand_size : handSize,
+            hints : hints,
+            password : password
         };
-
-        this.ws.send(JSON.stringify(message));
+        wsRef.current.send(JSON.stringify(message));
     }
 
-    handleStartGame = (event) =>{
+    const handleStartGame = (event) => {
 
         const gameStart = async () => {
         let response;
         try {
             response = await api.post("/game_start", {
-                id : this.state.gameId,
+                id : gameId,
                 timeline : null,
-                players : this.state.players,
-                deck : this.state.selected_deck,
-                hints : this.state.hints,
-                hand_size : this.state.hand_size,
+                players : players,
+                deck : selectedDeck,
+                hints : hints,
+                hand_size : handSize,
                 players_turn : "",
-                current_player : {id: "", name: this.state.player},
+                current_player : {id: "", name: player},
                 host : {id: "", name: ""},
                 hands : {},
                 password : "",
@@ -211,156 +105,273 @@ class GameLobby extends React.Component{
                 type: "navigate_to_board_game",
             };
 
-            this.ws.send(JSON.stringify(message));
+            wsRef.current.send(JSON.stringify(message));
 
         } catch (error){
             alert(error)
             console.error('Error Starting Game')
-            return
         }}
         gameStart()
     }
 
-    handleLeave = () => {
-        this.ws.close();
-        this.props.navigate("/",
-          {});
+    const resetLastJoinLeft = () => {
+        setLastJoin("");
+        setLastLeft("");
     }
 
-    resetLastJoinLeft = () => {
-        this.setState({lastJoin : "",
-                            lastLeft : ""
-        })
+    const getWebSocket = (gameId, player) => {
+        try {
+            if (wsRef.current == null && gameId && player) {
+            wsContext.connect(`ws://localhost:8000/ws/game/${gameId}/${player}`);
+            wsRef.current = wsContext.getSocket();
+        }
+        } catch (e) {
+            navigate("/");
+        }
     }
 
-    render() {
+    const getLobbyInitValues = async (gameId) => {
+      try {
+        const response = await api.get("/init_lobby", {
+          params: {
+            game_id: gameId
+          },
+        });
 
-        let {gameId, players, decks, hand_size, hints, host, player, lastJoin, lastLeft} = this.state;
+        setGameId(gameId);
+        setDecks(response.data.decks);
+        setHandSize(response.data.hand_size);
+        setHints(response.data.hints);
+        setPassword(response.data.password);
+        setSelectedDeck(response.data.decks[0]);
+        setPlayers(response.data.players);
+        setHost(response.data.host.name);
 
-        let is_host = (host === player);
+      } catch (error) {
+        alert(error);
+        console.error("Error Initiating lobby");
+      }
+    };
 
-        if (players.length === 0){
-            return;
-        }
+    // Mount/Unmount
+    useEffect(() => {
 
-        let message = "";
-        if (lastJoin !== "" && lastJoin !== player){
-            message = `${lastJoin} Has Joined!`
+        // window.addEventListener("beforeunload", handlePageReload);
 
-        } else if (lastLeft !== "" && lastLeft !== player){
-            message = `${lastLeft} Has Left!`
-        }
+      // Cleanup function runs on unmount
+      return () => {
+        // Reset states to defaults
+        setPlayer("");
+        setGameId("");
+        setHost("");
+        setPlayers([]);
+        setDecks([]);
+        setSelectedDeck("");
+        setHandSize(5);
+        setHints(0);
+        setBgColor([
+          Math.random() * 255,
+          Math.random() * 255,
+          Math.random() * 255
+        ]);
+        setPassword("");
+        setLastJoin("");
+        setLastLeft("");
+      };
+    }, []);
 
-        let PopUpIsVisible = message !== "";
+    useEffect(() => {
 
+    }, [gameId, player])
+
+    // // Page refreshing
+    // useEffect(() => {
+    //     getWebSocket()
+    // }, [wsRef]);
+
+    useEffect(() => {
+        let player = location?.state?.player || localStorage.getItem("player") || "";
+        let gameId = location?.state?.gameId || localStorage.getItem("gameID") || "";
+
+        setPlayer(player);
+        setGameId(gameId);
+        localStorage.setItem("gameID", player);
+        localStorage.setItem("player", gameId);
+        // window.history.pushState(null, null, window.location.href);
+
+        getWebSocket(gameId, player);
+
+        // Websockets communications
+        wsRef.current.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "player_joined") {
+            setPlayers(data.players);
+            setHost(data.host.name);
+            setLastJoin(data.player_joined);
+          }
+          // Player has left
+          else if (data.type === "player_left") {
+            setPlayers(data.players);
+            setHost(data.host.name);
+            setLastLeft(data.player_left);
+          }
+          else if (data.type === "input_updated") {
+            setSelectedDeck(data.selected_deck);
+            setHandSize(data.hand_size);
+            setHints(data.hints);
+            setPassword(data.password);
+          }
+          else if (data.type === "navigate_to_board_game") {
+            // Navigate to game lobby
+            navigate("/board_game", {
+              state: {
+                gameId: gameId,
+                player: player
+              }
+            });
+          }
+        };
+
+        // call it
+        getLobbyInitValues(gameId);
+
+  //     return () => {
+  //   window.removeEventListener("popstate", handleLeave);
+  //   window.removeEventListener("beforeunload", handlePageReload);
+  // };
+    }, [location]);
+
+    let is_host = (host === player);
+
+    if (players.length === 0){
         return (
-            <div className="game-lobby">
+            <div></div>
+        );
+    }
 
-                <div className="bg-color"
-                     style={{
-                         backgroundColor: `rgb(${this.state.bg_color[0]},
-                                            ${this.state.bg_color[1]},
-                                             ${this.state.bg_color[2]})`
-                     }}
-                />
+    let message = "";
+    if (lastJoin !== "" && lastJoin !== player){
+        message = `${lastJoin} Has Joined!`
 
-                <RandomLineBackground/>
+    } else if (lastLeft !== "" && lastLeft !== player){
+        message = `${lastLeft} Has Left!`
+    }
 
-                <div className="vertical-div">
-                    <div className="player-card-frame">
-                        {players.map((player) =>
-                            (<PlayerCard key={player.name} name={player.name}/>
-                            ))}
-                    </div>
-                    <div className="horizontal-div">
-                        <SeparatorLine/>
-                        <p className="custom-label"
-                           style={{
-                               opacity: 1,
-                               userSelect: false
-                           }}
-                        >{this.state.players.length}/4</p>
-                        <SeparatorLine/>
-                    </div>
-                     {is_host &&
-                <div className="vertical-div">
-                    <label className="custom-label">
-                        Password
-                    </label>
-                    <input className="custom-input"
-                           type="text"
-                           maxLength="15"
-                        style={{
-                            width: "200px"
-                            }}
-                          onBlur={this.handlePasswordChange}
-                           defaultValue={this.state.password}
-                    />
-                </div>}
-                </div>
+    let PopUpIsVisible = message !== "";
 
-                <div className="vertical-div">
-                    <p className="custom-label">Deck</p>
-                    <select disabled={!is_host}
-                            className="custom-select"
-                            onChange={this.handleDeckSelectChange}
-                            style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
-                    >
-                        {decks.map((deck) => (
-                            <option key={deck} value={deck}>
-                                {deck}
-                            </option>
+
+
+    return (
+        <div className="game-lobby">
+
+            <div className="bg-color"
+                 style={{
+                     backgroundColor: `rgb(${bgColor[0]},
+                                            ${bgColor[1]},
+                                             ${bgColor[2]})`
+                 }}
+            />
+
+            <RandomLineBackground/>
+
+            <div className="vertical-div">
+                <div className="player-card-frame">
+                    {players.map((player) =>
+                        (<PlayerCard key={player.name} name={player.name}/>
                         ))}
+                </div>
+                <div className="horizontal-div">
+                    <SeparatorLine/>
+                    <p className="custom-label"
+                       style={{
+                           opacity: 1,
+                           userSelect: false
+                       }}
+                    >{players.length}/4</p>
+                    <SeparatorLine/>
+                </div>
+                {is_host &&
+                    <div className="vertical-div">
+                        <label className="custom-label">
+                            Password
+                        </label>
+                        <input className="custom-input"
+                               type="text"
+                               maxLength="15"
+                               style={{
+                                   width: "200px"
+                               }}
+                               onBlur={handlePasswordChange}
+                               defaultValue={password}
+                        />
+                    </div>}
+            </div>
 
-                    </select>
-                </div>
-                <div className="vertical-div">
-                    <p className="custom-label">Hand Size</p>
-                    <input disabled={!is_host}
-                           type="number"
-                           className="custom-input"
-                           min="1"
-                           max="8"
-                           step="1"
-                           value={hand_size}
-                           onChange={this.handleStartingCardNumberChange}
-                           style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
-                    />
-                </div>
-                <div className="vertical-div">
-                    <p className="custom-label">Hints</p>
-                    <input disabled={!is_host}
-                           type="number"
-                           className="custom-input"
-                           min="0"
-                           max="10"
-                           step="1"
-                           value={hints}
-                           onChange={this.handleHintsChange}
-                           style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
-                    />
-                </div>
+            <div className="vertical-div">
+                <p className="custom-label">Deck</p>
+                <select
+                        value={selectedDeck}
+                        disabled={!is_host}
+                        className="custom-select"
+                        onChange={handleDeckSelectChange}
+                        style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
+                >
+                    {decks.map((deck) => (
+                        <option key={deck} value={deck}>
+                            {deck}
+                        </option>
+                    ))}
 
-                <div className="vertical-div">
-                    {is_host &&
+                </select>
+            </div>
+            <div className="vertical-div">
+                <p className="custom-label">Hand Size</p>
+                <input disabled={!is_host}
+                       type="number"
+                       className="custom-input"
+                       min="1"
+                       max="8"
+                       step="1"
+                       value={handSize}
+                       onChange={handleStartingCardNumberChange}
+                       style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
+                />
+            </div>
+            <div className="vertical-div">
+                <p className="custom-label">Hints</p>
+                <input disabled={!is_host}
+                       type="number"
+                       className="custom-input"
+                       min="0"
+                       max="10"
+                       step="1"
+                       value={hints}
+                       onChange={handleHintsChange}
+                       style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
+                />
+            </div>
+
+            <div className="vertical-div">
+                {is_host &&
                     <button
                         disabled={!is_host}
-                        className="home-button" onClick={this.handleStartGame}>Start Game
+                        className="home-button" onClick={handleStartGame}>Start Game
                     </button>}
-                    <LeaveButton
-                        handleLeave={this.handleLeave}
-                    />
-                </div>
-
-                <GameLobbyPopUp
-                    reset={this.resetLastJoinLeft}
-                    isVisible={PopUpIsVisible}
-                    message={message}
+                <LeaveButton
+                    handleLeave={handleLeave}
                 />
-
             </div>
-        )
-    }
+
+            <GameLobbyPopUp
+                reset={resetLastJoinLeft}
+                isVisible={PopUpIsVisible}
+                message={message}
+            />
+        </div>
+    )
+
+
 }
 
 export default NavigateWrapper(GameLobby)

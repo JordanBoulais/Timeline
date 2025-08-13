@@ -2,12 +2,12 @@ import React from "react";
 import "../css/hintButton.css"
 import imageMap from "./ImageMap.jsx";
 
- function HintButton({setHintTiles,
+ function HintButton({askHint,
                      remaining,
                      isPlayersTurn}){
 
     const handleClick = async (e) => {
-       setHintTiles()
+       await askHint()
     }
 
     let className = "hint-button";

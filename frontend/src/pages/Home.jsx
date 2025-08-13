@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import "../css/Home.css"
 import "../css/Utils.css"
 import {NavigateWrapper} from "./NavigateWrapper.jsx";
@@ -7,53 +7,44 @@ import HomePagePassword from "../components/HomePagePassword.jsx";
 import api from "../services/api.js";
 import GameBrowser from "../components/GameBrowser.jsx";
 
+function Home({navigate, location}){
 
-class Home extends React.Component{
+    const [player, setPlayer] = useState("");
+    const [password, setPassword] = useState("");
+    const [gamePasswordPopUp, setGamePasswordPopUp] = useState(false);
+    const [gameBrowserWindow, setGameBrowserWindow] = useState(false);
+    const [selectedGame, setSelectedGame] = useState({});
+    const [games, setGames] = useState([]);
+    const [bgColor, setBgColor] = useState([Math.random()*255, Math.random()*255, Math.random()*255])
 
-    constructor(props) {
-        super(props);
-        this.state = {
-        player: "",
-        password : "",
-        gamePasswordPopUp : false,
-        gameBrowserWindow: false,
-        bg_color : [Math.random()*255, Math.random()*255, Math.random()*255],
-        selected_game : {},
-        games : []
-        };
-    }
+    const handleInputChange = (event) => {
+        setPlayer(event.target.value);
+    };
 
-  handleInputChange = (event) => {
-    this.setState({ player: event.target.value });
-  };
+    const handleGamePasswordChanged = (event) => {
+        setPassword(event.target.value);
+    };
 
-    handleGamePasswordChanged = (event) => {
-    this.setState({ gamePassword: event.target.value });
-  };
+    const handlePasswordPopUpClose = (event) => {
+        setGamePasswordPopUp(true);
+        setPassword("");
+    };
 
+    const handleJoinWithPassword = () => {
 
-    handlePasswordPopUpClose = (event) => {
-    this.setState({ gamePasswordPopUp: false,
-                            password : ""});
-  };
+        if (password === selectedGame.password){
 
-    handleJoinWithPassword = () => {
-
-        if (this.state.gamePassword === this.state.selected_game.password){
-            this.handleJoin(this.state.selected_game.id)
+            handleJoin(selectedGame.id)
         } else {
             alert("Wrong Password")
         }
-
     }
 
-
-    handleJoin = (gameId) => {
+    const handleJoin = (gameId) => {
 
         // Add game to server
         const _handleJoin = async () => {
 
-        const {player} = this.state
         let response;
 
         try {
@@ -89,7 +80,7 @@ class Home extends React.Component{
             }
 
             // Navigate to game lobby
-            this.props.navigate("/game_lobby",
+            navigate("/game_lobby",
                     { state: { gameId: response.data.id,
                                 host : response.data.host.name,
                                 player : player,
@@ -101,53 +92,43 @@ class Home extends React.Component{
         }}
 
         _handleJoin()
-  };
+    };
 
-    joinGame = () =>{
-
+    const joinGame = (player) =>{
         // Check if player entered a name
-        const {player} = this.state
         if (player === ""){
             alert("Enter a PlayerName");
             return;
         }
-        const fetch_games = async () => {
-        try{
-            const response = await api.get('/get_games');
-            this.setState({
-            games: response.data.games,
-            gameBrowserWindow : true
-        });
-        } catch (error) {
-            console.error("Could not place card");
-        }}
-
+            const fetch_games = async () => {
+            try{
+                const response = await api.get('/get_games');
+                setGames(response.data.games);
+                setGameBrowserWindow(true);
+            } catch (error) {
+                console.error("Could not place card");
+            }}
         fetch_games()
     }
 
-    handleCloseGameBrowser = (event) =>{
-        this.setState({
-            gameBrowserWindow : false
-        })
+    const handleCloseGameBrowser = (event) =>{
+        setGameBrowserWindow(false);
     }
 
-    handleGameCardClick = (game) =>{
+    const handleGameCardClick = (game) =>{
         // Join game or enter password
 
         if (game.password === ""){
-            this.handleJoin(game.id)
+            handleJoin(game.id)
         } else{
-            this.setState({
-                gamePasswordPopUp : true,
-                selected_game : game
-            })
+            setGamePasswordPopUp(true);
+            setSelectedGame(game);
         }
     }
 
-    createGame = () =>{
+    const createGame = (player) =>{
 
         // Check if player entered a name
-        const {player} = this.state
 
         if (player === ""){
             alert("Enter a PlayerName");
@@ -155,7 +136,7 @@ class Home extends React.Component{
         }
 
         // Add game to server
-        const gameInit = async () => {
+        const gameInit = async (player) => {
         let response;
 
         try {
@@ -175,7 +156,7 @@ class Home extends React.Component{
             })
 
             // Navigate to game lobby
-            this.props.navigate("/game_lobby",
+            navigate("/game_lobby",
                     { state: {  gameId: response.data.id,
                                 host : response.data.host.name,
                                 player : player,
@@ -185,57 +166,60 @@ class Home extends React.Component{
             alert(error)
             console.error('Error Initiating game')
         }}
-        gameInit()
+        gameInit(player)
     }
 
 
-    render() {
-        return (
-            <div className="home">
+    useEffect(() => {
+        return () => {
+        }
+    }, []);
 
-                <div className="bg-color"
-                     style={{
-                         backgroundColor: `rgb(${this.state.bg_color[0]},
-                                            ${this.state.bg_color[1]},
-                                             ${this.state.bg_color[2]})`
-                     }}
-                />
+    return (
+        <div className="home">
 
-                <RandomLineBackground/>
+            <div className="bg-color"
+                 style={{
+                     backgroundColor: `rgb(${bgColor[0]},
+                                        ${bgColor[1]},
+                                         ${bgColor[2]})`
+                 }}
+            />
 
-                <GameBrowser
-                    isVisible={this.state.gameBrowserWindow}
-                    games={this.state.games}
-                    handleCloseGameBrowser={this.handleCloseGameBrowser}
-                    handleGameCardClick={this.handleGameCardClick}
-                />
+            <RandomLineBackground/>
 
-                <HomePagePassword
-                    isVisible={this.state.gamePasswordPopUp}
-                    handleGamePasswordChanged={this.handleGamePasswordChanged}
-                    handlePasswordPopUpClose={this.handlePasswordPopUpClose}
-                    handleJoin={this.handleJoinWithPassword}
-                />
+            <GameBrowser
+                isVisible={gameBrowserWindow}
+                games={games}
+                handleCloseGameBrowser={handleCloseGameBrowser}
+                handleGameCardClick={handleGameCardClick}
+            />
 
-                <div className="vertical-div">
-                    <label className="name-input-label">
-                        Enter Name
-                    </label>
-                    <input className="name-input"
-                           type="text"
-                           id="player-name"
-                           onChange={this.handleInputChange}
-                            maxlength="15"/>
-                </div>
+            <HomePagePassword
+                isVisible={gamePasswordPopUp}
+                handleGamePasswordChanged={handleGamePasswordChanged}
+                handlePasswordPopUpClose={handlePasswordPopUpClose}
+                handleJoin={handleJoinWithPassword}
+            />
 
-                <div className="home-button-div">
-                <button className="home-button" onClick={this.createGame}>Create Game</button>
-                <button className="home-button" onClick={this.joinGame}>Join Game</button>
-                </div>
-
+            <div className="vertical-div">
+                <label className="name-input-label">
+                    Enter Name
+                </label>
+                <input className="name-input"
+                       type="text"
+                       id="player-name"
+                       onChange={handleInputChange}
+                        maxlength="15"/>
             </div>
-        )
-    }
+
+            <div className="home-button-div">
+            <button className="home-button" onClick={() => createGame(player)}>Create Game</button>
+            <button className="home-button" onClick={() => joinGame(player)}>Join Game</button>
+            </div>
+
+        </div>
+    )
 }
 
 export default NavigateWrapper(Home);
