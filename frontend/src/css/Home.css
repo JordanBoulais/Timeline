@@ -135,3 +135,10 @@
     cursor: pointer;
 }
 
+@media screen and (max-width: 768px) {
+
+    .game-browser-window{
+        transform: scale(0.6);
+    }
+
+}

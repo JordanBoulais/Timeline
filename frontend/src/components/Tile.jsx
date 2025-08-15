@@ -1,18 +1,16 @@
 import "../css/Tile.css"
-import React from "react";
+import React, {useContext} from "react";
+import {BoardGameContext} from "../pages/BoardGame.jsx";
 
-function Tile({timelineCallBack,
-                  index,
-                  overTile,
-                  isPlayersTurn,
-                  setNodeRef,
-                  hint_tiles}){
+function Tile({index, setNodeRef}){
 
-    const handleClick = async (e) => {
-        timelineCallBack(index)
+    const {isPlayersTurn, overTile, hintTiles, handleTileClick} = useContext(BoardGameContext);
+
+    const handleClick = async (index) => {
+        handleTileClick(index)
     };
 
-    let is_hint = hint_tiles.includes(index);
+    let is_hint = hintTiles.includes(index);
     let className = "tile";
 
     if ((! is_hint) && (! isPlayersTurn)){
@@ -27,7 +25,7 @@ function Tile({timelineCallBack,
     return (
     <div className={className}
          ref={setNodeRef}
-         onClick={handleClick}
+         onClick={() => handleClick(index)}
          style={tileStyle}
     >
     </div>

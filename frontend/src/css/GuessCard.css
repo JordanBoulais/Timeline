@@ -125,3 +125,17 @@
     font-size: 10px;
     user-select: none;
 }
+
+
+@media screen and (max-width: 768px) {
+
+    .guess-card-hand, .guess-card-hand-new, .guess-card-timeline, .guess-card-hand-selected {
+        width: 66.5px;
+        height: 50px;
+    }
+
+    .guess-year{
+        font-size: 10px;
+    }
+
+}

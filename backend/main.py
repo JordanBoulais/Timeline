@@ -35,7 +35,11 @@ games_db = {}
 
 # ------------------- Utils ------------------------------------
 
-def create_game(players, host):
+def create_game(players : List[Player],
+                host : Player) -> Game:
+    """
+    Create a new game and add it to database.
+    """
 
     game_id = str(uuid4())
     game = Game(game_id, players, host=host)
@@ -54,23 +58,31 @@ def create_game(players, host):
 
 @app.get("/get_games", response_model=GamesModel)
 async def get_games():
+    """
+    Return all games from database.
+    """
     games = [g.to_model() for g in games_db.values()]
     return GamesModel(games=games)
 
 @app.get("/init_lobby", response_model=GameModel)
 async def init_lobby(game_id: str):
+    """
+    Get game data for initializing lobby.
+    """
 
     if game_id not in games_db:
-        game = Game("", [])
-    else:
-        game = games_db[game_id]
+        return Game("", []).to_model()
 
+    game = games_db[game_id]
     game.set_in_game(False)
 
     return game.to_model()
 
 @app.get("/game_begin", response_model=GameModel)
 async def game_begin(game_id: str):
+    """
+    Get game data to begin game.
+    """
 
     if game_id not in games_db:
         game = Game("", [])
@@ -81,6 +93,9 @@ async def game_begin(game_id: str):
 
 @app.get("/get_timeline", response_model=TimeLineModel)
 async def get_timeline(game_id: str):
+    """
+    Get timeline from game.
+    """
 
     if game_id not in games_db:
         game = Game("", [])
@@ -92,6 +107,9 @@ async def get_timeline(game_id: str):
 
 @app.get("/get_hands", response_model=HandsModel)
 async def get_hands(game_id: str):
+    """
+    Get hands from game.
+    """
 
     if game_id not in games_db:
         game = Game("", [])
@@ -109,7 +127,10 @@ async def get_hands(game_id: str):
 # ------------ POSTING ------------
 @app.post("/game_init", response_model=GameModel)
 async def game_init(game_model: GameModel):
-
+    """
+    Create a new game and add it to database with game creator
+    as the only player.
+    """
 
     player = Player(game_model.current_player.name, "")
     game = create_game([], player)
@@ -118,7 +139,9 @@ async def game_init(game_model: GameModel):
 
 @app.post("/game_join", response_model=GameModel)
 async def game_join(game_model: GameModel):
-
+    """
+    Join game as current player.
+    """
     # Game not found
     if not game_model.id in games_db.keys():
 
@@ -129,7 +152,7 @@ async def game_join(game_model: GameModel):
     # Adding player to game
     game = games_db[game_model.id]
 
-    # Max 4 players
+    # Max 4 players, game already started, player already exists in game
     if len(game.get_players()) >= 4:
         return Game("FULL", []).to_model()
     elif game.get_in_game():
@@ -141,7 +164,10 @@ async def game_join(game_model: GameModel):
 
 @app.post("/game_start", response_model=GameModel)
 async def game_start(game_start_model: GameModel):
-
+    """
+    Handle game start.
+    Fetch deck cards, shuffle deck, assign hands, etc.
+    """
     game = games_db[game_start_model.id]
     deck = Deck.load_deck(game_start_model.deck)
     deck.shuffle()
@@ -166,6 +192,7 @@ async def game_start(game_start_model: GameModel):
     game.set_default()
 
     game.set_hints(game_start_model.hints)
+    game.set_hint_size(game_start_model.hint_size)
     game.set_hand_size(game_start_model.hand_size)
     game.set_deck(deck)
     game.set_timeline(timeline)
@@ -177,7 +204,9 @@ async def game_start(game_start_model: GameModel):
 
 @app.post("/delete_game", response_model=GameModel)
 async def delete_game(game: GameModel):
-
+    """
+    Delete game from database when everyone player has left.
+    """
     print("ending game")
     try:
         del games_db[game.id]
@@ -188,7 +217,9 @@ async def delete_game(game: GameModel):
     return game
 
 async def check_game_state(game : Game) -> Dict[str, Any]:
-
+    """
+    Check if game has ended
+    """
     out_data = {"type" : "check_game_state",
                 "game_is_over" : False,
             }
@@ -199,7 +230,12 @@ async def check_game_state(game : Game) -> Dict[str, Any]:
     return out_data
 
 async def place_card(game : Game, tile_index : int) -> None:
-
+    """
+    Place a card on the timeline.
+    Calculate if answer is good or not.
+    Add new card to Player's hand if answer is wrong.
+    Determined if this is game's last turn. (If player placed all it's cards)
+    """
     # If currently no card selected
     selected_card = game.get_selected_card()
     if not selected_card:
@@ -226,9 +262,7 @@ async def place_card(game : Game, tile_index : int) -> None:
             game.add_winner(hand.get_player())
     # Wrong answer
     else:
-
         game.add_discarded_card(selected_card)
-
         # Deck still have cards
         if game.get_deck().get_cards():
             top_card = game.get_deck().top_card()
@@ -244,7 +278,6 @@ async def place_card(game : Game, tile_index : int) -> None:
         hand.set_new_to_hand(top_card.get_title())
         hand.add_card(top_card)
 
-
     # Check if game is over here
     print(game.get_players_turn())
     if game.get_winners() and game.get_players_turn() == (len(game.get_players()) - 1):
@@ -254,7 +287,11 @@ async def place_card(game : Game, tile_index : int) -> None:
     game.set_players_turn((game.get_players_turn() + 1) % len(game.get_players()) )
 
 async def ask_hint(game : Game, player : str):
-
+    """
+    Ask hint for player.
+    Based on answer, will calculate 3 tiles (including answer) to be
+    consider as hint.
+    """
     player_hand = game.get_hands()[player]
     selected_card = player_hand.get_selected_card()
 
@@ -272,12 +309,13 @@ async def ask_hint(game : Game, player : str):
     # number of tiles in timeline
     tiles_num = len(timeline.get_cards()) + 1
 
-    # 3 tiles always as hint
-    indexes = list(range(answer_index, answer_index+3))
+    hint_size = game.get_hint_size()
 
-    if tiles_num > 3:
+    indexes = list(range(answer_index, answer_index+hint_size))
+
+    if tiles_num > hint_size:
         # moving tile window randomly
-        random_offset = random.randint(0, 2)
+        random_offset = random.randint(0, hint_size-1)
         indexes = list(map(lambda x: x - random_offset, indexes))
         # if greater than number of tiles
         if indexes[-1] > tiles_num-1:
@@ -286,7 +324,7 @@ async def ask_hint(game : Game, player : str):
         elif indexes[0] < 0:
             indexes = list(map(lambda x: x + abs(indexes[0]), indexes))
     else:
-        indexes = indexes[0:tiles_num]
+        indexes =  list(range(0, tiles_num+1))
 
     new_hints = player_hand.get_hints() - 1
     new_hints = new_hints if new_hints > 0 else 0
@@ -299,6 +337,10 @@ async def ask_hint(game : Game, player : str):
 async def select_card(game : Game,
                       player_name : str,
                       card_title : str):
+    """
+    Selecting a card from player's hand.
+    Will update game and hand.
+    """
     hand = game.get_hands()[player_name]
 
     if hand.get_hint_mode():
@@ -311,6 +353,10 @@ async def select_card(game : Game,
 
 @app.websocket("/ws/game/{game_id}/{player_name}")
 async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
+    """
+    Handle websocket handshake when a player enters a game.
+    Handle when a player leaves a game. (WebSocketDisconnect)
+    """
     await websocket.accept()
 
     if game_id not in games_db.keys():
@@ -318,61 +364,49 @@ async def game_ws(websocket: WebSocket, game_id: str, player_name: str):
 
     game = games_db[game_id]
 
-    # Check for refresh
-    player = game.get_player_by_name(player_name)
-    if player:
-        player.set_websocket(websocket)
-        player.set_disconnection(False)
-    else:
-        player = Player(name=player_name, websocket=websocket, id=str(uuid4()))
-        player_db[player.get_id()] = player
-        game.add_player(player)
+    player = Player(name=player_name, websocket=websocket, id=str(uuid4()))
+    player_db[player.get_id()] = player
+    game.add_player(player)
 
-        # Notify everyone in the lobby
-        data = {}
-        data["type"] = "player_joined"
-        data["players"] = game.get_players()
-        data["player_joined"] = player_name
-        await broadcast_game(game, data)
+    # Notify everyone in the lobby
+    data = dict()
+    data["type"] = "player_joined"
+    data["players"] = game.get_players()
+    data["player_joined"] = player_name
+    await broadcast_game(game, data)
 
     try:
         while True:
             data = await websocket.receive_json()
             await broadcast_game(game, data)
     except WebSocketDisconnect:
+        game.remove_player(player)
+        game.set_is_over(True)
+        # If host left, setting new host
+        if len(game.get_players()) > 0:
+            if game.get_host() == player:
+                game.set_host(game.get_players()[0])
 
-        try:
-            player.set_disconnection(True)
-            await asyncio.sleep(1)
+            # broadcast to game
+            data = {
+                "type": "player_left",
+                "player_left": player.get_name()
+            }
+            await broadcast_game(game, data)
+        else:
+            print(f"Deleting game with id: {game_id}")
+            del games_db[game_id]
 
-            if not player.get_disconnection():
-                return
+        # Removing from player database
+        del player_db[player.get_id()]
 
-            game.remove_player(player)
-            game.set_is_over(True)
-
-            # If host left, setting new host
-            if len(game.get_players()) > 0:
-                if game.get_host() == player:
-                    game.set_host(game.get_players()[0])
-
-                # broadcast to game
-                data = {
-                    "type": "player_left",
-                    "player_left": player.get_name()
-                }
-                await broadcast_game(game, data)
-            else:
-                print(f"Deleting game with id: {game_id}")
-                del games_db[game_id]
-
-            # Removing from player database
-            del player_db[player.get_id()]
-        except Exception:
-            pass
+    except Exception:
+        pass
 
 async def broadcast_game(game: Game, data):
-
+    """
+    Notify all players in game when someone does an action (play cards, ask hint, etc.)
+    """
     comm_type = data.get("type")
 
     # Update game
@@ -385,6 +419,7 @@ async def broadcast_game(game: Game, data):
         game.set_password(data.get("password"))
         game.set_hand_size(data.get("hand_size"))
         game.set_hints(data.get("hints"))
+        game.set_hint_size(data.get("hint_size"))
     elif comm_type == "select_card":
         await select_card(game,
                           data.get("player_name"),
@@ -408,6 +443,7 @@ async def broadcast_game(game: Game, data):
                     "selected_deck" :  data.get("selected_deck"),
                     "hand_size" : data.get("hand_size"),
                     "hints" : data.get("hints"),
+                    "hint_size" : data.get("hint_size"),
                     "password" : data.get("password"),
                 })
             elif comm_type == "navigate_to_board_game":
@@ -445,9 +481,14 @@ async def broadcast_game(game: Game, data):
                     "type": "over_tile",
                     "over_tile" : data.get("over_tile"),
                 })
+            elif comm_type == "kick_player":
+                await player.get_websocket().send_json({
+                    "type": "kick_player",
+                    "kick_player": data.get("kick_player"),
+                })
+
         except Exception as e:
             print(f"WebSocket send error: {e}")
-
 
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000)

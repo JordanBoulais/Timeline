@@ -9,7 +9,7 @@ function GuessCardTimeLine({title,
                            overTile}){
 
     let fontSize = 25 - title.length * 0.3
-
+    fontSize = window.innerWidth < 768 ? fontSize * 0.5 : fontSize;
     let xOffset = 0;
 
     if (index === overTile){

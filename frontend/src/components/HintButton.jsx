@@ -1,10 +1,12 @@
-import React from "react";
+import React, {useContext} from "react";
 import "../css/hintButton.css"
 import imageMap from "./ImageMap.jsx";
+import {BoardGameContext} from "../pages/BoardGame.jsx";
 
  function HintButton({askHint,
-                     remaining,
-                     isPlayersTurn}){
+                     remaining}){
+
+     const {isPlayersTurn} = useContext(BoardGameContext);
 
     const handleClick = async (e) => {
        await askHint()

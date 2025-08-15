@@ -5,16 +5,21 @@ import TimeLine from "../components/TimeLine.jsx";
 import WinnerPopUp from "../components/WinnerPopUp.jsx";
 import LeftPopUp from "../components/LeftPopUp.jsx";
 import RandomLineBackground from "../components/RandomLineBackground.jsx";
+import LeaveButton from "../components/LeaveButton.jsx";
 import "../css/Tile.css"
 import "../css/BoardGame.css"
 import "../css/Utils.css"
-import React, {useContext, useEffect, useState} from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import {NavigateWrapper} from "./NavigateWrapper.jsx";
 import { WebSocketContextObj } from './WebSocketContext.jsx'
 import {DndContext} from "@dnd-kit/core";
 import PlayersTurn from "../components/PlayersTurn.jsx";
 
+export const BoardGameContext = createContext(null);
 
+/**
+ * Board game page component.
+ */
 function BoardGame({navigate, location}){
 
     const wsContext = useContext(WebSocketContextObj);
@@ -37,18 +42,34 @@ function BoardGame({navigate, location}){
     const [winners, setWinners] = useState([]);
     const [playerLeft, setPlayerLeft] = useState("");
     const [overTile, setOverTile] = useState(-9999999);
+    const [maxCardsPerRow, setMaxCardPerRow] = useState(8);
 
+    const handleLeave = () => {
+        wsRef.current.close();
+        navigate("/");
+    }
 
+    /**
+     * Create rows based on cards input.
+     */
     const cardsToRows = (cards) => {
+        let cardWidth = window.innerWidth < 768 ? 65 : 155;
+        let maxCards = window.innerWidth < 768 ? 4 : 8;
+        let cardsPerRow = Math.floor(window.innerWidth / cardWidth)
+
+        cardsPerRow = (cardsPerRow > maxCards) ? maxCards : cardsPerRow
+        setMaxCardPerRow(maxCards);
+
         let rs = [];
         let row = [];
         for (let i=0; i< cards.length; i++){
             row.push(cards[i]);
-            if (((i + 1) % 8) === 0){
+            if (((i + 1) % cardsPerRow) === 0){
                 rs.push(row);
                 row = [];
             }
         }
+
         // Si des cartes restent à la fin, on les ajoute aussi
         if (row.length > 0) {
             rs.push(row);
@@ -56,19 +77,11 @@ function BoardGame({navigate, location}){
         return rs;
     };
 
-    const getWebSocket = (gameId, player) => {
-        try {
-            if (wsRef.current == null && gameId && player) {
-            wsContext.connect(`ws://localhost:8000/ws/game/${gameId}/${player}`);
-            wsRef.current = wsContext.getSocket();
-        }
-        } catch (e) {
-            wsRef.current = wsContext.getSocket();
-        }
-    }
 
+    /**
+     * Check if game has ended. Communicate with backend.
+     */
     const checkGameState = async () => {
-
         const message = {
             type: "check_game_state",
         };
@@ -76,6 +89,9 @@ function BoardGame({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     }
 
+    /**
+     * Update all hands. (`get` from backend)
+     */
     const updateHandCards = async (currentGameId) => {
         try{
             const response = await api.get('/get_hands', {
@@ -89,21 +105,9 @@ function BoardGame({navigate, location}){
         }
     };
 
-    const handleBackButton = (event) => {
-        window.history.pushState(null, null, window.location.href);
-    };
-
-    const handlePageReload = (event) => {
-        localStorage.setItem("gameID", gameId);
-        localStorage.setItem("player", player);
-        const message = {
-          type: "someone_page_refresh",
-        };
-
-        wsRef.current.send(JSON.stringify(message));
-    }
-
-
+    /**
+     * Player ask for hint. Communicate with backend.
+     */
     const askHint = async () => {
         const message = {
             type: "ask_hint",
@@ -112,20 +116,23 @@ function BoardGame({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     }
 
-  const handleDragStart = async (event) => {
-    const { active } = event;
-    const card_data = JSON.parse(active.id);
+    /**
+     * Upon dragging, update game's selected card. Communicate with backend.
+     */
+    const handleDragStart = async (event) => {
+        const { active } = event;
+        const card_data = JSON.parse(active.id);
 
-      let message = {
-        type: "select_card",
-        player_name : player,
-        card_title: card_data.title
-        };
+          let message = {
+            type: "select_card",
+            player_name : player,
+            card_title: card_data.title
+            };
 
-        wsRef.current.send(JSON.stringify(message))
+            wsRef.current.send(JSON.stringify(message))
 
-    await updateHandCards(gameId)
-  }
+        await updateHandCards(gameId)
+    }
 
     const handleDragEnd = async (event) => {
       const { active, over } = event;
@@ -171,29 +178,24 @@ function BoardGame({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     };
 
-    // Component mounted
-    useEffect(() => {
+      const handlePopState = (event) => {
+    // Only intercept "back"
+    window.history.pushState(null, "", window.location.href);
+  };
 
-        let gameId = location?.state?.gameId || localStorage.getItem("gameID") || "";
-        let player = location?.state?.player || localStorage.getItem("player") || ""
+    const getBoardGameInitValues = async (_gameId, _player) => {
+        try {
+            wsRef.current = wsContext.getSocket();
+            if (wsRef.current === null){
+                navigate("/",
+                        {});
+            }
 
-        setGameId(gameId);
-        setPlayer(player);
-
-        // Preventing from changing page
-        localStorage.setItem("gameID", "");
-        localStorage.setItem("player", "");
-        window.history.pushState(null, null, window.location.href);
-        window.addEventListener("popstate", handleBackButton);
-        window.addEventListener("beforeunload", handlePageReload);
-
-        const getBoardGameInitValues = async (_gameId, _player) => {
-          try {
             const response = await api.get('/game_begin', {
-              params: {
+                params: {
                     game_id: _gameId,
                     current_player: _player,
-              },
+                },
             });
             // Maybe handle this in backend
             let rs = cardsToRows(response.data.timeline.cards)
@@ -207,70 +209,82 @@ function BoardGame({navigate, location}){
             setWinners([]);
             setPlayerLeft("");
             setHintTiles([]);
-          } catch (error) {
-            alert(error);
+        } catch (error) {
             console.error('Error fetching starting hands');
-          }
         }
+    }
+
+    // Component mounted
+    useEffect(() => {
+        let player = location?.state?.player || localStorage.getItem("player") || "";
+        let gameId = location?.state?.gameId || localStorage.getItem("gameId") || "";
+        document.title = `Timeline - ${player}`
+        setGameId(gameId);
+        setPlayer(player);
+
+        localStorage.setItem("player", player);
+        localStorage.setItem("gameId", gameId);
+
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener("popstate", handlePopState);
+
 
         // Game init values and ws
         getBoardGameInitValues(gameId, player);
-        getWebSocket(gameId, player)
 
-        // Websocket Handlers
-        wsRef.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        // Place card on timeline
-        if (data.type === "place_card") {
-            let rs = cardsToRows(data.timeline.cards)
-            setTimeline(data.timeline);
-            setHands(data.hands);
-            setPlayersTurn(data.players_turn);
-            setRows(rs);
-            setRowCount(rs.length);
-            setIsOver(data.is_over);
-            setWinners(data.winners);
-            setHintTiles([]);
-            checkGameState()
-        }
-        // Check if player has left
-        else if (data.type === "player_left") {
-            setIsOver(true);
-            setPlayerLeft(data.player_left.name);
-            setHost(data.host.name);
-            checkGameState()
-        }
+        wsRef.current = wsContext.getSocket();
+        if (wsRef.current === null){
+            navigate("/");
+        } else {
+            wsRef.current.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // Place card on timeline
+                if (data.type === "place_card") {
+                    let rs = cardsToRows(data.timeline.cards)
+                    setTimeline(data.timeline);
+                    setHands(data.hands);
+                    setPlayersTurn(data.players_turn);
+                    setRows(rs);
+                    setRowCount(rs.length);
+                    setIsOver(data.is_over);
+                    setWinners(data.winners);
+                    setHintTiles([]);
+                    checkGameState()
+                }
+                // Check if player has left
+                else if (data.type === "player_left") {
+                    setIsOver(true);
+                    setPlayerLeft(data.player_left.name);
+                    setHost(data.host.name);
+                    checkGameState()
+                }
 
-        // Asking for hint
-        else if (data.type === "ask_hint") {
-            setHintTiles(data.hint_tiles);
-            updateHandCards(gameId);
-        }
-
-        else if (data.type === "over_tile"){
-            setOverTile(data.over_tile);
-        }
-        // Check if game is over
-        else if (data.type === "check_game_state") {
-        if (data.game_is_over){
-            setTimeout(() => {
-                navigate("/game_lobby", {
-                    state: {
-                        gameId: gameId,
-                        player: player,
+                // Asking for hint
+                else if (data.type === "ask_hint") {
+                    setHintTiles(data.hint_tiles);
+                    updateHandCards(gameId);
+                } else if (data.type === "over_tile") {
+                    setOverTile(data.over_tile);
+                }
+                // Check if game is over
+                else if (data.type === "check_game_state") {
+                    if (data.game_is_over) {
+                        setTimeout(() => {
+                            navigate("/game_lobby", {
+                                state: {
+                                    gameId: gameId,
+                                    player: player,
+                                }
+                            });
+                        }, 3000);
                     }
-                });
-            }, 3000);
-        }}
-        } // end Handlers
-
-    },[location])
-
-    // Unmount
-    useEffect(() => {
-        window.removeEventListener("popstate", handleBackButton);
-        window.removeEventListener("beforeunload", handlePageReload);
-    }, []);
+                }
+            } // end Handlers
+        }
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        };
+    },[])
 
     if (gameId === ""){
             return;
@@ -289,8 +303,13 @@ function BoardGame({navigate, location}){
     // Display Hands here
     return (
 
+        <BoardGameContext.Provider value={{player,
+                                    isPlayersTurn,
+                                    maxCardsPerRow,
+                                    overTile,
+                                    hintTiles,
+                                    handleTileClick}} >
         <div className="board-game">
-
             <div className="bg-color"
                  style={{
                      backgroundColor: `rgb(${bgColor[0]},
@@ -301,24 +320,28 @@ function BoardGame({navigate, location}){
 
             <RandomLineBackground/>
 
-            <div className="horizontal-div"
-                 style={{
-                     position: "absolute",
-                     top: "10px",
-                     userSelect: false
-                 }}
-            >
-                {Object.values(hands).map((hand, index) =>
-                    (<PlayersTurn
-                            winners={winners}
-                            key={index}
-                            playersTurn={playersTurn}
-                            player={hand.player.name}
-                            cardsNum={hand.cards.length}
-                        />
-                    ))}
+            <div className="vertical-div"
+                style={{
+                    position: "absolute",
+                    top: "10px",
+                    userSelect: "none"
+                }}>
+                <div className="players-turn-container">
+                    {Object.values(hands).map((hand, index) =>
+                        (<PlayersTurn
+                                winners={winners}
+                                key={index}
+                                playersTurn={playersTurn}
+                                player={hand.player.name}
+                                cardsNum={hand.cards.length}
+                            />
+                        ))}
+                </div>
+                <LeaveButton
+                    handleLeave={handleLeave}
+                  scaleFactor={0.5}
+                />
             </div>
-
 
             <DndContext
                 onDragStart={handleDragStart}
@@ -326,22 +349,18 @@ function BoardGame({navigate, location}){
                 onDragOver={handleDragOver}
             >
 
-                <TimeLine cards={timeline.cards} gameId={gameId}
-                          hintTiles={hintTiles}
-                          isPlayersTurn={isPlayersTurn}
-                          handleTileClick={handleTileClick}
+                <TimeLine cards={timeline.cards}
+                          gameId={gameId}
                           rows={rows}
                           rowCount={rowCount}
-                          overTile={overTile}
                 />
                 <Hand gameId={gameId}
                       player_name={hand.player.name}
                       cards={hand.cards}
                       Hints={hand.hints}
                       askHint={askHint}
-                      isPlayersTurn={isPlayersTurn}
                       hands={hands}
-                      new_to_hand={hand.new_to_hand}
+                      newToHand={hand.new_to_hand}
                 />
             </DndContext>
             <WinnerPopUp
@@ -353,8 +372,8 @@ function BoardGame({navigate, location}){
                 player_left={playerLeft}
             />
         </div>
+        </BoardGameContext.Provider>
     )
-
 }
 
 export default NavigateWrapper(BoardGame)

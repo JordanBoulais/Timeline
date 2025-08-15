@@ -3,11 +3,8 @@ import React from "react";
 import TimeLineRow from "./TimeLineRow.jsx";
 
 function TimeLine({rows,
-                  rowCount,
-                  handleTileClick,
-                  hintTiles,
-                  isPlayersTurn,
-                  overTile}){
+                  rowCount
+                  }){
 
     let timelinescale = 1 - (rowCount - 1) * 0.025;
     let translateY = 15 + (rowCount - 1) * 5;
@@ -22,10 +19,6 @@ function TimeLine({rows,
                     key={rowIndex}
                     startIndex={rowIndex}
                     cards={row}
-                    handleTileClick={handleTileClick}
-                    hintTiles={hintTiles}
-                    isPlayersTurn={isPlayersTurn}
-                    overTile={overTile}
                 />
             ))}
         </div>

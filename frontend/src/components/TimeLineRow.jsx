@@ -1,27 +1,24 @@
 import "../css/TimeLine.css"
-import React from "react";
+import React, {useContext} from "react";
 import GuessCardTimeLine from "./GuessCardTimeLine.jsx";
 import {DroppableTileWrapper} from "./DroppableTileWrapper.jsx";
+import {BoardGameContext} from "../pages/BoardGame.jsx";
 
 function TimeLineRow({startIndex,
-                     cards,
-                     handleTileClick,
-                     hintTiles,
-                     isPlayersTurn,
-                     overTile}){
+                     cards}){
+
+    const {maxCardsPerRow} = useContext(BoardGameContext);
 
     let row = startIndex;
-    let startIndexByRow = row*8;
+    let startIndexByRow = row*maxCardsPerRow;
+
+    const {overTile} = useContext(BoardGameContext);
 
         return (
     <div className="timeline-row">
         <DroppableTileWrapper
             index={startIndexByRow}
             row={row}
-            timelineCallBack={handleTileClick}
-            hint_tiles={hintTiles}
-            isPlayersTurn={isPlayersTurn}
-            overTile={overTile}
         />
         {cards.map((card, index) => (
             <React.Fragment key={card.title}>
@@ -35,10 +32,6 @@ function TimeLineRow({startIndex,
                <DroppableTileWrapper
                     row={row}
                     index={index+1+startIndexByRow}
-                    timelineCallBack={handleTileClick}
-                    hint_tiles={hintTiles}
-                    isPlayersTurn={isPlayersTurn}
-                    overTile={overTile}
                 />
             </React.Fragment>
         ))}

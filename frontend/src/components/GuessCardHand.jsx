@@ -1,16 +1,18 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import "../css/GuessCard.css"
 import imageMap from "./ImageMap.jsx"
+import {BoardGameContext} from "../pages/BoardGame.jsx";
 
-function GuessCardHand({new_to_hand,
+function GuessCardHand({newToHand,
                            selected,
-                           isPlayersTurn,
                            title,
                             img}){
 
+    const {isPlayersTurn} = useContext(BoardGameContext);
+
     let className = "guess-card-hand";
 
-    if (new_to_hand){
+    if (newToHand){
         className = "guess-card-hand-new"
     }
     else if (selected && isPlayersTurn){
@@ -18,6 +20,8 @@ function GuessCardHand({new_to_hand,
     }
 
     let fontSize =25 - title.length * 0.3;
+
+    fontSize = window.innerWidth < 768 ? fontSize * 0.5 : fontSize;
 
     let disabled = (isPlayersTurn) ? {} : {
         pointerEvents: "none",

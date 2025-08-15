@@ -60,6 +60,7 @@ function Home({navigate, location}){
                 deck : "",
                 decks : [],
                 hints : 0,
+                hint_size : 0,
                 hand_size : 0
             })
 
@@ -153,6 +154,7 @@ function Home({navigate, location}){
                 deck : "",
                 decks : [],
                 hints : 0,
+                hint_size : 0
             })
 
             // Navigate to game lobby
@@ -171,6 +173,7 @@ function Home({navigate, location}){
 
 
     useEffect(() => {
+        document.title = `Timeline`
         return () => {
         }
     }, []);
@@ -210,7 +213,7 @@ function Home({navigate, location}){
                        type="text"
                        id="player-name"
                        onChange={handleInputChange}
-                        maxlength="15"/>
+                        maxLength="15"/>
             </div>
 
             <div className="home-button-div">

@@ -5,19 +5,14 @@ import DraggableCardWrapper from "./DraggableCardWrapper.jsx";
 
 
 
-function Hand({player_name,
-              cards,
-              new_to_hand,
+function Hand({cards,
+              newToHand,
               gameId,
-              isPlayersTurn,
               Hints,
               askHint}){
 
-
             return (
             <div className="hand-container">
-
-                {/*<p className="custom-label">{this.props.player_name}</p>*/}
 
                 <div className="hand">
                     {cards.map((card) => (
@@ -26,11 +21,9 @@ function Hand({player_name,
                             title={card.title}
                             year={card.year}
                             img={card.img}
-                            new_to_hand={card.title === new_to_hand}
-                            player_name={player_name}
+                            newToHand={card.title === newToHand}
                             gameId={gameId}
                             selected={card.selected}
-                            isPlayersTurn={isPlayersTurn}
                         />
                     ))}
                 </div>
@@ -38,7 +31,6 @@ function Hand({player_name,
                 <HintButton
                     remaining={Hints}
                     askHint={askHint}
-                    isPlayersTurn={isPlayersTurn}
                 />
 
             </div>

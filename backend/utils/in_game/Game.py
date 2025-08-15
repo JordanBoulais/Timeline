@@ -23,6 +23,7 @@ class Game():
         self.players_orders = []
         self.hand_size = 5
         self.hints = 0
+        self.hint_size = 2
         self.discarded_cards = []
 
         # In Game
@@ -30,7 +31,6 @@ class Game():
         self.timeline = Timeline(Card("", 99999999))
         self.players_turn = 0
         self.selected_card = None
-        self.someone_page_refresh = False
 
         self.in_game = False
         self.is_over = False
@@ -50,7 +50,7 @@ class Game():
         self.left = None
         self.hand_size = 5
         self.hints = 0
-        self.someone_page_refresh = False
+        self.hint_size = 0
 
     def get_player_by_name(self, name):
         for player in self.players:
@@ -60,11 +60,11 @@ class Game():
     def set_hand_size(self, size):
         self.hand_size = size
 
-    def set_someone_page_refresh(self, value):
-        self.someone_page_refresh = value
-
     def set_hints(self, hints):
         self.hints = hints
+
+    def set_hint_size(self, size):
+        self.hint_size = size
 
     def set_password(self, password):
         self.password = password
@@ -106,6 +106,9 @@ class Game():
     def get_hand_size(self):
         return self.hand_size
 
+    def get_hint_size(self):
+        return self.hint_size
+
     def get_hints(self):
         return self.hints
 
@@ -135,9 +138,6 @@ class Game():
 
     def get_hands(self):
         return self.hands
-
-    def get_someone_page_refresh(self):
-        return self.someone_page_refresh
 
     def get_hands_model(self):
 
@@ -220,5 +220,6 @@ class Game():
                          current_player=self.get_players()[self.get_players_turn()].to_model() if self.get_players() else None,
                          deck=self.selected_deck,
                          decks=self.decks,
-                         hints=self.hints
+                         hints=self.hints,
+                         hint_size=self.hint_size,
                         )

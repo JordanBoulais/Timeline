@@ -41,6 +41,7 @@ class GameModel(BaseModel):
     deck : str
     decks: List[str]
     hints : int
+    hint_size : int
 
 class GamesModel(BaseModel):
     games : List[GameModel]

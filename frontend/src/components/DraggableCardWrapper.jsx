@@ -1,11 +1,15 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import GuessCardHand from './GuessCardHand';
+import {useContext} from "react";
+import {BoardGameContext} from "../pages/BoardGame.jsx";
 
 function DraggableCardWrapper(props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: JSON.stringify({ title: props.title, year: props.year })
   });
+
+  const {isPlayersTurn} = useContext(BoardGameContext);
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -19,7 +23,7 @@ function DraggableCardWrapper(props) {
          style={style}
 
          // Disabling dragNdrop if not player's turn
-         {...(props.isPlayersTurn ? listeners : {})}
+         {...(isPlayersTurn ? listeners : {})}
          {...attributes}>
       <GuessCardHand {...props} />
     </div>

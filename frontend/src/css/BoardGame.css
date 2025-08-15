@@ -28,8 +28,16 @@ html, body {
     z-index: 999;
     animation: translateUp 2s forwards ease-in-out;
     top: 50%;
-
 }
+
+.players-turn-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+    z-index: 1;
+}
+
 
 @keyframes translateUp {
   0% {
@@ -38,4 +46,16 @@ html, body {
   100% {
     transform: translate(0px, -250px);
   }
+}
+
+
+@media screen and (max-width: 768px) {
+
+    .players-turn-container {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, 1fr); /* 2 equal columns */
+        grid-template-rows: repeat(2, 1fr);    /* 2 equal rows */
+    }
+
 }

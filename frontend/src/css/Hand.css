@@ -70,3 +70,17 @@
   padding: 0;
     margin: 2px 0;
 }
+
+@media screen and (max-width: 768px) {
+    .hand{
+        display: grid;
+        gap: 0.2vw;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .hand-container{
+        height: 150px;
+    }
+
+
+}

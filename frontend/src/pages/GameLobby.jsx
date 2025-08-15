@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import "../css/GameLobby.css"
 import "../css/Utils.css"
 import PlayerCard from "../components/PlayerCard.jsx";
@@ -11,7 +11,10 @@ import JoinPopUp from "../components/GameLobbyPopUp.jsx";
 import api from "../services/api.js";
 import { WebSocketContextObj } from './WebSocketContext.jsx';
 import GameLobbyPopUp from "../components/GameLobbyPopUp.jsx";
+import hand from "../components/Hand.jsx";
 
+
+export const GameLobbyContext = createContext(null);
 
 function GameLobby({navigate, location}){
 
@@ -26,49 +29,66 @@ function GameLobby({navigate, location}){
     const [selectedDeck, setSelectedDeck] = useState("");
     const [handSize, setHandSize] = useState(5);
     const [hints, setHints] = useState(0);
+    const [hintSize, setHintSize] = useState(0);
     const [bgColor, setBgColor] = useState([Math.random()*255, Math.random()*255, Math.random()*255]);
     const [password, setPassword] = useState("");
     const [lastJoin, setLastJoin] = useState("");
     const [lastLeft, setLastLeft] = useState("");
 
-    // const handlePageReload = (event) => {
-    //     localStorage.setItem("gameID", gameId);
-    //     localStorage.setItem("player", player);
-    //     alert("handlePageReload")
-    //     window.removeEventListener("beforeunload", handlePageReload);
-    //     const message = {
-    //         type: "someone_page_refresh",
-    //     };
-    //     wsRef.current.send(JSON.stringify(message));
-    // }
 
-      const handleLeave = () => {
+    const handleLeave = () => {
         wsRef.current.close();
         navigate("/",
           {});
     }
 
+    const handleKick = (playerName) => {
+
+        message = { type : "kick_player",
+                    kick_player : playerName};
+
+        wsRef.current.send(JSON.stringify(message));
+    }
+
     const handleDeckSelectChange = (event) => {
-        handleInputChange(gameId, event.target.value, handSize, hints, password)
+        handleInputChange(gameId, event.target.value, handSize, hints, hintSize, password)
     };
 
     const handleStartingCardNumberChange = (event) => {
-        handleInputChange(gameId, selectedDeck, event.target.value, hints, password)
+
+        let numbers = event.target.value < 1 ? 1 : event.target.value
+        numbers = numbers > 8 ? 8 : numbers
+
+        handleInputChange(gameId, selectedDeck, numbers,
+            hints, hintSize, password)
     };
 
     const handleHintsChange = (event) => {
-        handleInputChange(gameId, selectedDeck, handSize, event.target.value, password)
+
+        let numbers = event.target.value < 0 ? 0 : event.target.value
+        numbers = numbers > 10 ? 10 : numbers
+
+        handleInputChange(gameId, selectedDeck, handSize, numbers, hintSize, password)
+    };
+
+    const handleHintSizeChange = (event) => {
+
+        let numbers = event.target.value < 2 ? 2 : event.target.value
+        numbers = numbers > 10 ? 10 : numbers
+
+        handleInputChange(gameId, selectedDeck, handSize, hints, numbers, password)
     };
 
     const handlePasswordChange = (event) => {
          alert("Password Changed")
-        handleInputChange(gameId, selectedDeck, handSize, hints, event.target.value)
+        handleInputChange(gameId, selectedDeck, handSize, hints, hintSize, event.target.value)
     };
 
     const handleInputChange = (gameId,
                                selectedDeck,
                                handSize,
                                hints,
+                               hintSize,
                                password) => {
         const message = {
           type: "input_updated",
@@ -76,6 +96,7 @@ function GameLobby({navigate, location}){
             selected_deck : selectedDeck,
             hand_size : handSize,
             hints : hints,
+            hint_size : hintSize,
             password : password
         };
         wsRef.current.send(JSON.stringify(message));
@@ -92,6 +113,7 @@ function GameLobby({navigate, location}){
                 players : players,
                 deck : selectedDeck,
                 hints : hints,
+                hint_size : hintSize,
                 hand_size : handSize,
                 players_turn : "",
                 current_player : {id: "", name: player},
@@ -124,7 +146,9 @@ function GameLobby({navigate, location}){
             if (wsRef.current == null && gameId && player) {
             wsContext.connect(`ws://localhost:8000/ws/game/${gameId}/${player}`);
             wsRef.current = wsContext.getSocket();
-        }
+        } else{
+            wsRef.current = wsContext.getSocket();
+            }
         } catch (e) {
             navigate("/");
         }
@@ -140,65 +164,42 @@ function GameLobby({navigate, location}){
 
         setGameId(gameId);
         setDecks(response.data.decks);
+        setSelectedDeck(response.data.deck);
         setHandSize(response.data.hand_size);
         setHints(response.data.hints);
+        setHintSize(response.data.hint_size)
         setPassword(response.data.password);
         setSelectedDeck(response.data.decks[0]);
         setPlayers(response.data.players);
         setHost(response.data.host.name);
 
       } catch (error) {
-        alert(error);
+            handleLeave()
         console.error("Error Initiating lobby");
       }
     };
 
-    // Mount/Unmount
-    useEffect(() => {
+  const handlePopState = (event) => {
+    // Only intercept "back"
+    window.history.pushState(null, "", window.location.href);
+  };
 
-        // window.addEventListener("beforeunload", handlePageReload);
-
-      // Cleanup function runs on unmount
-      return () => {
-        // Reset states to defaults
-        setPlayer("");
-        setGameId("");
-        setHost("");
-        setPlayers([]);
-        setDecks([]);
-        setSelectedDeck("");
-        setHandSize(5);
-        setHints(0);
-        setBgColor([
-          Math.random() * 255,
-          Math.random() * 255,
-          Math.random() * 255
-        ]);
-        setPassword("");
-        setLastJoin("");
-        setLastLeft("");
-      };
-    }, []);
-
-    useEffect(() => {
-
-    }, [gameId, player])
-
-    // // Page refreshing
-    // useEffect(() => {
-    //     getWebSocket()
-    // }, [wsRef]);
-
+    // Mount
     useEffect(() => {
         let player = location?.state?.player || localStorage.getItem("player") || "";
-        let gameId = location?.state?.gameId || localStorage.getItem("gameID") || "";
+        let gameId = location?.state?.gameId || localStorage.getItem("gameId") || "";
+
+        document.title = `Timeline - ${player}`
 
         setPlayer(player);
         setGameId(gameId);
-        localStorage.setItem("gameID", player);
-        localStorage.setItem("player", gameId);
-        // window.history.pushState(null, null, window.location.href);
+        localStorage.setItem("player", player);
+        localStorage.setItem("gameId", gameId);
 
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener("popstate", handlePopState);
+
+        getLobbyInitValues(gameId)
         getWebSocket(gameId, player);
 
         // Websockets communications
@@ -220,6 +221,7 @@ function GameLobby({navigate, location}){
             setSelectedDeck(data.selected_deck);
             setHandSize(data.hand_size);
             setHints(data.hints);
+            setHintSize(data.hint_size)
             setPassword(data.password);
           }
           else if (data.type === "navigate_to_board_game") {
@@ -230,25 +232,16 @@ function GameLobby({navigate, location}){
                 player: player
               }
             });
-          }
+          } else if (data.type === "kick_player" && data.kick_player === player){
+              handleLeave();
+            }
         };
-
-        // call it
-        getLobbyInitValues(gameId);
-
-  //     return () => {
-  //   window.removeEventListener("popstate", handleLeave);
-  //   window.removeEventListener("beforeunload", handlePageReload);
-  // };
-    }, [location]);
+      return () => {
+          window.removeEventListener("popstate", handlePopState);
+        };
+    }, []);
 
     let is_host = (host === player);
-
-    if (players.length === 0){
-        return (
-            <div></div>
-        );
-    }
 
     let message = "";
     if (lastJoin !== "" && lastJoin !== player){
@@ -260,118 +253,132 @@ function GameLobby({navigate, location}){
 
     let PopUpIsVisible = message !== "";
 
-
-
     return (
         <div className="game-lobby">
-
-            <div className="bg-color"
-                 style={{
-                     backgroundColor: `rgb(${bgColor[0]},
+            <GameLobbyContext.Provider value={{handleKick: handleKick}}>
+                <div className="bg-color"
+                     style={{
+                         backgroundColor: `rgb(${bgColor[0]},
                                             ${bgColor[1]},
                                              ${bgColor[2]})`
-                 }}
-            />
+                     }}
+                />
 
-            <RandomLineBackground/>
+                <RandomLineBackground/>
 
-            <div className="vertical-div">
-                <div className="player-card-frame">
-                    {players.map((player) =>
-                        (<PlayerCard key={player.name} name={player.name}/>
-                        ))}
+                <div className="vertical-div">
+                    <div className="player-card-frame">
+                        {players.map((p) =>
+                            (<PlayerCard key={p.name}
+                                         player={player}
+                                         name={p.name}
+                                         host={host}
+                                />
+                            ))}
+                    </div>
+                    <div className="horizontal-div">
+                        <SeparatorLine/>
+                        <p className="custom-label"
+                           style={{
+                               opacity: 1,
+                               userSelect: false
+                           }}
+                        >{players.length}/4</p>
+                        <SeparatorLine/>
+                    </div>
+                    {is_host &&
+                        <div className="vertical-div">
+                            <label className="custom-label">
+                                Password
+                            </label>
+                            <input className="custom-input"
+                                   type="text"
+                                   maxLength="15"
+                                   style={{
+                                       width: "200px"
+                                   }}
+                                   onBlur={handlePasswordChange}
+                                   defaultValue={password}
+                            />
+                        </div>}
                 </div>
-                <div className="horizontal-div">
-                    <SeparatorLine/>
-                    <p className="custom-label"
-                       style={{
-                           opacity: 1,
-                           userSelect: false
-                       }}
-                    >{players.length}/4</p>
-                    <SeparatorLine/>
-                </div>
-                {is_host &&
-                    <div className="vertical-div">
-                        <label className="custom-label">
-                            Password
-                        </label>
-                        <input className="custom-input"
-                               type="text"
-                               maxLength="15"
-                               style={{
-                                   width: "200px"
-                               }}
-                               onBlur={handlePasswordChange}
-                               defaultValue={password}
-                        />
-                    </div>}
-            </div>
 
-            <div className="vertical-div">
-                <p className="custom-label">Deck</p>
-                <select
+                <div className="vertical-div">
+                    <p className="custom-label">Deck</p>
+                    <select
                         value={selectedDeck}
                         disabled={!is_host}
                         className="custom-select"
                         onChange={handleDeckSelectChange}
                         style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
-                >
-                    {decks.map((deck) => (
-                        <option key={deck} value={deck}>
-                            {deck}
-                        </option>
-                    ))}
+                    >
+                        {decks.map((deck) => (
+                            <option key={deck} value={deck}>
+                                {deck}
+                            </option>
+                        ))}
 
-                </select>
-            </div>
-            <div className="vertical-div">
-                <p className="custom-label">Hand Size</p>
-                <input disabled={!is_host}
-                       type="number"
-                       className="custom-input"
-                       min="1"
-                       max="8"
-                       step="1"
-                       value={handSize}
-                       onChange={handleStartingCardNumberChange}
-                       style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
-                />
-            </div>
-            <div className="vertical-div">
-                <p className="custom-label">Hints</p>
-                <input disabled={!is_host}
-                       type="number"
-                       className="custom-input"
-                       min="0"
-                       max="10"
-                       step="1"
-                       value={hints}
-                       onChange={handleHintsChange}
-                       style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
-                />
-            </div>
+                    </select>
+                </div>
+                <div className="vertical-div">
+                    <p className="custom-label">Hand Size</p>
+                    <input disabled={!is_host}
+                           type="number"
+                           className="custom-input"
+                           min="1"
+                           max="8"
+                           step="1"
+                           value={handSize || 1}
+                           onChange={handleStartingCardNumberChange}
+                           style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
+                    />
+                </div>
+                <div className="vertical-div">
+                    <p className="custom-label">Hints</p>
+                    <input disabled={!is_host}
+                           type="number"
+                           className="custom-input"
+                           min="0"
+                           max="10"
+                           step="1"
+                           value={hints}
+                           onChange={handleHintsChange}
+                           style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
+                    />
+                </div>
+                <div className="vertical-div">
+                    <p className="custom-label">Hint Size</p>
+                    <input disabled={!is_host || (hints == 0) }
+                           type="number"
+                           className="custom-input"
+                           min="2"
+                           max="10"
+                           step="1"
+                           value="2"
+                           onChange={handleHintSizeChange}
+                           style={{boxShadow: '5px 5px 10px rgba(0, 0, 0, 0.4)'}}
+                    />
+                </div>
+                <div className="vertical-div">
+                    {is_host &&
+                        <button
+                            disabled={!is_host}
+                            className="home-button" onClick={handleStartGame}>Start Game
+                        </button>}
+                    <LeaveButton
+                        scaleFactor={0.7}
+                        handleLeave={handleLeave}
+                    />
+                </div>
 
-            <div className="vertical-div">
-                {is_host &&
-                    <button
-                        disabled={!is_host}
-                        className="home-button" onClick={handleStartGame}>Start Game
-                    </button>}
-                <LeaveButton
-                    handleLeave={handleLeave}
+                <GameLobbyPopUp
+                    reset={resetLastJoinLeft}
+                    isVisible={PopUpIsVisible}
+                    message={message}
                 />
-            </div>
-
-            <GameLobbyPopUp
-                reset={resetLastJoinLeft}
-                isVisible={PopUpIsVisible}
-                message={message}
-            />
+            </GameLobbyContext.Provider>
         </div>
     )
-
-
 }
 
 export default NavigateWrapper(GameLobby)

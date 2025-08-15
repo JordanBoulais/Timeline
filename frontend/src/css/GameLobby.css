@@ -8,7 +8,7 @@
     width: 100vw;
     height: 100vh;
     z-index: 9999; /* on top of everything */
-    gap: 60px;
+    gap: 45px;
     padding-top: 100px;
 }
 
@@ -59,4 +59,47 @@ custom-select:disabled {
   background-color: #eee;
   color: #999;
   cursor: not-allowed;
+}
+
+.kick-image {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 1;
+    z-index: 0;
+}
+
+.kick-button{
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    right: 5%;
+    top: 8%;
+}
+
+.kick-button:hover{
+    cursor: pointer;
+}
+
+
+@media screen and (max-width: 768px) {
+
+    .game-lobby {
+        gap: 15px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .player-card-container {
+        transform: scale(0.8);
+    }
+
+    .player-card-frame {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, 1fr); /* 2 equal columns */
+        grid-template-rows: repeat(2, 1fr);    /* 2 equal rows */
+    }
+
 }

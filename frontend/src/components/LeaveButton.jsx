@@ -2,9 +2,12 @@ import React from "react";
 import "../css/LeaveButton.css"
 import imageMap from "./ImageMap.jsx";
 
-function LeaveButton({handleLeave }) {
+function LeaveButton({handleLeave, scaleFactor}) {
   return (
-    <div className="leave-button" onClick={handleLeave}>
+    <div className="leave-button" onClick={handleLeave}
+        style={{
+            transform : `scale(${scaleFactor}) translate(0px, ${1/scaleFactor * -12}px) `
+        }}>
       <div
         className="leave-button-image"
         style={{
