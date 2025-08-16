@@ -2,6 +2,8 @@ import "../css/Hand.css"
 import "../css/Utils.css"
 import HintButton from "../components/HintButton.jsx";
 import DraggableCardWrapper from "./DraggableCardWrapper.jsx";
+import React, {useContext} from "react";
+import {BoardGameContext} from "../pages/BoardGame.jsx";
 
 
 
@@ -11,8 +13,13 @@ function Hand({cards,
               Hints,
               askHint}){
 
+    const {isPlayersTurn, playersTurn} = useContext(BoardGameContext);
+
             return (
             <div className="hand-container">
+                {!isPlayersTurn && (<div className="is-playing">
+                    {playersTurn} Is Playing...
+                </div>)}
 
                 <div className="hand">
                     {cards.map((card) => (

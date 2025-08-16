@@ -45,6 +45,10 @@ class Deck():
     def load_deck(cls, deck_name):
         script_dir = os.path.dirname(os.path.abspath(__file__))
         file_path = os.path.join(script_dir, "../../", "decks", f"{deck_name}.json")
+
+        # script_dir = os.path.dirname(os.path.abspath(__file__))
+        # file_path = os.path.join(script_dir, "decks", f"{deck_name}.json")
+
         with open(file_path, "r") as file:
             data = json.load(file)
             file.close()

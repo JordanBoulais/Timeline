@@ -7,13 +7,12 @@ import {BoardGameContext} from "../pages/BoardGame.jsx";
 function TimeLineRow({startIndex,
                      cards}){
 
-    const {maxCardsPerRow} = useContext(BoardGameContext);
+    const {maxCardsPerRow, timeline} = useContext(BoardGameContext);
 
     let row = startIndex;
     let startIndexByRow = row*maxCardsPerRow;
-
+    let newCardName = timeline.new_card != null ? timeline.new_card.title : "";
     const {overTile} = useContext(BoardGameContext);
-
         return (
     <div className="timeline-row">
         <DroppableTileWrapper
@@ -28,6 +27,7 @@ function TimeLineRow({startIndex,
                     title={card.title}
                     year={card.year}
                     img={card.img}
+                    newCard={newCardName}
                 />
                <DroppableTileWrapper
                     row={row}

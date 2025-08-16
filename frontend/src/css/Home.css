@@ -1,9 +1,16 @@
 .home{
     display: flex;
     flex-direction: column;
-    justify-content: center;  /* horizontal */
-    align-items: center;      /* vertical */
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
     gap: 50px;
+    padding-top: 25vh;
+    background-color: #2d2d2d;
 }
 
 .home-button{
@@ -28,10 +35,11 @@
 .home-button:hover{
     cursor: pointer;
     border: 2px solid white;
+    color: white;
 }
 
 .home-button:disabled{
-  background-color: #eee;
+  background-color: #5b5b5b;
   color: #999;
   cursor: not-allowed;
 }
@@ -42,10 +50,13 @@
     height: 25px;
     text-align: center;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
+    background-color: rgba(0,0,0,0.1);
+    color: white;
 }
 
 .name-input-label{
     font-weight: bold;
+    color: white;
 }
 
 .home-button-div{
@@ -98,6 +109,7 @@
     z-index: 10;
     border: 2px solid white;
     opacity: 0.95;
+    transform: translate(0, -10vh);
 }
 
 .game-card-container{
@@ -138,7 +150,13 @@
 @media screen and (max-width: 768px) {
 
     .game-browser-window{
-        transform: scale(0.6);
+        transform: scale(0.65) translate(0, -25vh);
     }
+
+    .home{
+        padding-top: 30vh;
+    }
+
+
 
 }

@@ -21,7 +21,7 @@ const RandomLineBackground = () => {
         y2: y,
         color: Math.random() > 0.5 ? "white" : "black",
         lineWidth: Math.random() * 200,
-        alpha: Math.random() * 0.01,
+        alpha: Math.random() * 0.02,
         speedX: Math.random() * 2 - 1, // random horizontal speed
       });
     }

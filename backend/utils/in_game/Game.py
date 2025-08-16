@@ -103,6 +103,11 @@ class Game():
     def remove_player(self, player):
         self.players.remove(player)
 
+    def remove_player_by_name(self, name):
+        for player in self.players:
+            if player.name == name:
+                self.players.remove(player)
+
     def get_hand_size(self):
         return self.hand_size
 
@@ -207,7 +212,16 @@ class Game():
     def set_host(self, host):
         self.host = host
 
+    def __str__(self):
+
+        return (f"{self.id}\n{self.players}\n{self.hands}\n{self.hand_size}\n{self.timeline}\n{self.players_turn}\n{self.host}"
+                    f"{self.password}\n{self.selected_deck}\n{self.decks}\n{self.hints}\n{self.hint_size}")
+
+
     def to_model(self):
+
+
+        print(self.selected_deck)
 
         return GameModel(id=self.id,
                          players=[player.to_model() for player in self.players],

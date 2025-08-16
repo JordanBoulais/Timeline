@@ -19,9 +19,9 @@ function GuessCardHand({newToHand,
         className = "guess-card-hand-selected"
     }
 
-    let fontSize =25 - title.length * 0.3;
+    let fontSize = 25 - title.length * 0.3;
 
-    fontSize = window.innerWidth < 768 ? fontSize * 0.5 : fontSize;
+    fontSize = window.innerWidth < 768 ? fontSize * 0.6 : fontSize;
 
     let disabled = (isPlayersTurn) ? {} : {
         pointerEvents: "none",
@@ -41,6 +41,8 @@ function GuessCardHand({newToHand,
                     style={{fontSize : `${fontSize}px`,
                             top : "20%",
                             userSelect: "none",
+                            zIndex : "1",
+                            color: "white"
                             }}
                     >{title}</div>
 

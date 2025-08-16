@@ -50,7 +50,7 @@
 @media screen and (max-width: 768px) {
 
     .tile, .tile-disabled, .hint-tile, .hint-tile-disabled {
-        height: 50px;
+        height: 59px;
     }
 
 }

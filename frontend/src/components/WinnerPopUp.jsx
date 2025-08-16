@@ -1,14 +1,14 @@
 import React, {useRef} from 'react';
 import '../css/Utils.css';
 import '../css/BoardGame.css';
-import imageMap from "./ImageMap.jsx"
+import AudioMap from "./AudioMap.jsx";
 
 function WinnerPopUp({isVisible, winners, }){
 
     if (!isVisible) return null;
 
     const prevIsVisible = useRef(isVisible);
-    const audio = new Audio(imageMap["applause.mp3"]);
+    const audio = new Audio(AudioMap["applause.mp3"]);
     audio.volume = 0.1;
     audio.play()
 

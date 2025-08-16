@@ -5,24 +5,35 @@ const WebSocketContext = React.createContext(null);
 export class WebSocketProvider extends React.Component {
   constructor(props) {
     super(props);
-    this.socket = null;
+    this.sockets = new Map(); // key: id, value: WebSocket
   }
 
-  connect = (url) => {
-    if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
-      this.socket = new WebSocket(url);
+  connect = (url, id) => {
+    if (!this.sockets.has(id) || this.sockets.get(id).readyState === WebSocket.CLOSED) {
+      const socket = new WebSocket(url);
+
+      // Remove socket from the map when it closes
+      socket.onclose = () => {
+        console.log(`Socket with id ${id} closed`);
+        this.sockets.delete(id);
+      };
+
+      this.sockets.set(id, socket);
     }
-    return this.socket;
+
+    return this.sockets.get(id);
   };
 
-  getSocket = () => this.socket;
+  getSocket = (id) => this.sockets.get(id) || null;
 
   render() {
     return (
-      <WebSocketContext.Provider value={{
-        connect: this.connect,
-        getSocket: this.getSocket,
-      }}>
+      <WebSocketContext.Provider
+        value={{
+          connect: this.connect,
+          getSocket: this.getSocket,
+        }}
+      >
         {this.props.children}
       </WebSocketContext.Provider>
     );

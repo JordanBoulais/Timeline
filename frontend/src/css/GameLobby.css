@@ -1,15 +1,27 @@
 .game-lobby {
     display: flex;
-    flex-direction: column; /* empile les TimeLineRow verticalement */
+    flex-direction: column;
     align-items: center;
-    position: fixed; /* or absolute */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 9999; /* on top of everything */
-    gap: 45px;
-    padding-top: 100px;
+    z-index: 9999;
+    gap: 35px;
+    padding-top: 10vh;
+    background-color: #262626;
+}
+
+.game-state-button{
+    background-color: rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center; /* horizontal centering */
+    align-items: center;     /* vertical centering */
+    width: 50px;             /* fixed width */
+    height: 50px;            /* fixed height */
+    font-size: 1.2rem;       /* adjust as needed */
+    cursor: pointer;
 }
 
 .player-card {
@@ -28,6 +40,7 @@
     border: 2px solid white;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4);
     background-color: rgba(0,0,0,0.1);
+    color: white;
 }
 
 .player-card-frame {
@@ -40,6 +53,7 @@
         height: 25px;
         border-radius: 8px;
         text-align: center;
+    background-color: rgba(0,0,0,0.1);
 }
 
 custom-input:disabled {
@@ -89,10 +103,12 @@ custom-select:disabled {
         gap: 15px;
         padding-left: 10px;
         padding-right: 10px;
+        padding-top: 5vh;
     }
 
     .player-card-container {
         transform: scale(0.8);
+
     }
 
     .player-card-frame {

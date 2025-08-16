@@ -1,6 +1,4 @@
-import GuessCardHand from "../components/GuessCardHand.jsx";
 import Hand from "../components/Hand.jsx";
-import api from "../services/api.js"
 import TimeLine from "../components/TimeLine.jsx";
 import WinnerPopUp from "../components/WinnerPopUp.jsx";
 import LeftPopUp from "../components/LeftPopUp.jsx";
@@ -14,6 +12,7 @@ import {NavigateWrapper} from "./NavigateWrapper.jsx";
 import { WebSocketContextObj } from './WebSocketContext.jsx'
 import {DndContext} from "@dnd-kit/core";
 import PlayersTurn from "../components/PlayersTurn.jsx";
+import PopUp from "../components/PopUp.jsx";
 
 export const BoardGameContext = createContext(null);
 
@@ -30,24 +29,36 @@ function BoardGame({navigate, location}){
     const [players, setPlayers] = useState([]);
     const [hands, setHands] = useState({})
     const [host, setHost] = useState("");
+    const [socketId, setSocketId] = useState("");
     const [playersTurn, setPlayersTurn] = useState("");
     const [timeline, setTimeline] = useState(null);
     const [rows, setRows] = useState([]);
     const [rowCount, setRowCount] = useState(1);
     const [hintTiles, setHintTiles] = useState([]);
-    const [bgColor, setBgColor] = useState([Math.random()*255,
-                                                    Math.random()*255,
-                                                    Math.random()*255]);
+    const [bgColor, setBgColor] = useState([Math.random()*255*0.5,
+                                                    Math.random()*255*0.5,
+                                                    Math.random()*255*0.5]);
     const [isOver, setIsOver] = useState(false);
     const [winners, setWinners] = useState([]);
     const [playerLeft, setPlayerLeft] = useState("");
     const [overTile, setOverTile] = useState(-9999999);
     const [maxCardsPerRow, setMaxCardPerRow] = useState(8);
+    const [popUpMessage, setPopUpMessage] = useState("");
 
     const handleLeave = () => {
-        wsRef.current.close();
+
+        let message = { type : "player_left",
+            player_left : player};
+
+        wsRef.current.send(JSON.stringify(message));
+
         navigate("/");
     }
+
+    const reset = () => {
+        setPopUpMessage("");
+    }
+
 
     /**
      * Create rows based on cards input.
@@ -81,7 +92,7 @@ function BoardGame({navigate, location}){
     /**
      * Check if game has ended. Communicate with backend.
      */
-    const checkGameState = async () => {
+    const checkGameState = () => {
         const message = {
             type: "check_game_state",
         };
@@ -94,12 +105,14 @@ function BoardGame({navigate, location}){
      */
     const updateHandCards = async (currentGameId) => {
         try{
-            const response = await api.get('/get_hands', {
-            params: {
-            game_id: currentGameId
-          },
-        });
-            setHands(response.data.hands);
+
+            let message = {
+                type : "get_hands",
+                game_id : currentGameId
+            }
+
+            wsRef.current.send(JSON.stringify(message))
+
         } catch (error) {
             console.error("Could not place card");
         }
@@ -194,59 +207,59 @@ function BoardGame({navigate, location}){
     window.history.pushState(null, "", window.location.href);
   };
 
-    const getBoardGameInitValues = async (_gameId, _player) => {
-        try {
-            wsRef.current = wsContext.getSocket();
-            if (wsRef.current === null){
-                navigate("/",
-                        {});
-            }
+  const setBoardGameInitValues = (data) => {
+        let rs = cardsToRows(data.timeline.cards)
+        setHost(data.host.name);
+        setTimeline(data.timeline);
+        setPlayers(data.players);
+        setHands(data.hands);
+        setPlayersTurn(data.players_turn);
+        setRows(rs);
+        setIsOver(false);
+        setWinners([]);
+        setPlayerLeft("");
+        setHintTiles([]);
+  }
 
-            const response = await api.get('/game_begin', {
-                params: {
-                    game_id: _gameId,
-                    current_player: _player,
-                },
-            });
-            // Maybe handle this in backend
-            let rs = cardsToRows(response.data.timeline.cards)
-            setHost(response.data.host.name);
-            setTimeline(response.data.timeline);
-            setPlayers(response.data.players);
-            setHands(response.data.hands);
-            setPlayersTurn(response.data.players_turn);
-            setRows(rs);
-            setIsOver(false);
-            setWinners([]);
-            setPlayerLeft("");
-            setHintTiles([]);
-        } catch (error) {
-            console.error('Error fetching starting hands');
+  const getWebSocket = (socketId) => {
+
+        wsRef.current = socketId ? wsContext.getSocket(socketId) : null;
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN){
+            navigate("/");
         }
+    }
+
+    const getBoardGameInitValues = (_gameId) => {
+
+        let message = {
+            type : "game_begin",
+            game_id : _gameId
+        }
+
+        wsRef.current.send(JSON.stringify(message))
     }
 
     // Component mounted
     useEffect(() => {
-        let player = location?.state?.player || localStorage.getItem("player") || "";
-        let gameId = location?.state?.gameId || localStorage.getItem("gameId") || "";
+        let id = location?.state?.socketId;
+        getWebSocket(id)
+
+        let player = location?.state?.player || "";
+        let gameId = location?.state?.gameId ||  "";
         document.title = `Timeline - ${player}`
         setGameId(gameId);
         setPlayer(player);
-
+        setSocketId(id)
         localStorage.setItem("player", player);
         localStorage.setItem("gameId", gameId);
 
         window.history.pushState(null, "", window.location.href);
         window.addEventListener("popstate", handlePopState);
 
+        if (wsRef.current) {
+            // Game init values and ws
+            getBoardGameInitValues(gameId);
 
-        // Game init values and ws
-        getBoardGameInitValues(gameId, player);
-
-        wsRef.current = wsContext.getSocket();
-        if (wsRef.current === null){
-            navigate("/");
-        } else {
             wsRef.current.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 // Place card on timeline
@@ -260,7 +273,20 @@ function BoardGame({navigate, location}){
                     setIsOver(data.is_over);
                     setWinners(data.winners);
                     setHintTiles([]);
+                    if (data.timeline.new_card !== null && !data.timeline.right_answer){
+                        setPopUpMessage(`${data.timeline.new_card.title.toString()}
+                                                ${data.timeline.new_card.year.toString()}`);
+                    } else {
+                        setPopUpMessage("");
+                    }
+
                     checkGameState()
+                }
+                else if (data.type === "game_begin") {
+                    setBoardGameInitValues(data);
+                }
+                else if (data.type === "get_hands"){
+                    setHands(data.hands);
                 }
                 // Check if player has left
                 else if (data.type === "player_left") {
@@ -285,13 +311,20 @@ function BoardGame({navigate, location}){
                                 state: {
                                     gameId: gameId,
                                     player: player,
+                                    socketId : id
                                 }
                             });
                         }, 3000);
                     }
                 }
             } // end Handlers
+        let message = {
+            type : "game_begin",
         }
+
+        wsRef.current.send(JSON.stringify(message));
+        }
+
         return () => {
             window.removeEventListener("popstate", handlePopState);
         };
@@ -311,78 +344,88 @@ function BoardGame({navigate, location}){
     const hasWinners = (isOver && winners.length !== 0);
     const left = (isOver && playerLeft !== "");
 
+    const wrongAnswerPopUp = (!timeline.right_answer
+                                        && timeline.new_card != null
+                                        && popUpMessage !== "")
+    // alert(wrongAnswerPopUp)
     // Display Hands here
     return (
 
         <BoardGameContext.Provider value={{player,
                                     isPlayersTurn,
+                                    playersTurn,
                                     maxCardsPerRow,
                                     overTile,
                                     hintTiles,
+                                    timeline,
                                     handleTileClick}} >
-        <div className="board-game">
-            <div className="bg-color"
-                 style={{
-                     backgroundColor: `rgb(${bgColor[0]},
+            <div className="board-game">
+                <div className="bg-color"
+                     style={{
+                         backgroundColor: `rgb(${bgColor[0]},
                                         ${bgColor[1]},
                                          ${bgColor[2]})`
-                 }}
-            />
+                     }}
+                />
 
-            <RandomLineBackground/>
+                <RandomLineBackground/>
 
-            <div className="vertical-div"
-                style={{
-                    position: "absolute",
-                    top: "10px",
-                    userSelect: "none"
-                }}>
-                <div className="players-turn-container">
-                    {Object.values(hands).map((hand, index) =>
-                        (<PlayersTurn
-                                winners={winners}
-                                key={index}
-                                playersTurn={playersTurn}
-                                player={hand.player.name}
-                                cardsNum={hand.cards.length}
-                            />
-                        ))}
+                <div className="vertical-div"
+                     style={{
+                         position: "absolute",
+                         top: "10px",
+                         userSelect: "none"
+                     }}>
+                    <div className="players-turn-container">
+                        {Object.values(hands).map((hand, index) =>
+                            (<PlayersTurn
+                                    winners={winners}
+                                    key={index}
+                                    playersTurn={playersTurn}
+                                    player={hand.player.name}
+                                    cardsNum={hand.cards.length}
+                                />
+                            ))}
+                    </div>
+                    <LeaveButton
+                        handleLeave={handleLeave}
+                        scaleFactor={0.5}
+                    />
                 </div>
-                <LeaveButton
-                    handleLeave={handleLeave}
-                  scaleFactor={0.5}
+
+                <PopUp
+                    isVisible={wrongAnswerPopUp}
+                    message={popUpMessage}
+                    reset={reset}
+                />
+
+                <DndContext
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                >
+                    <TimeLine gameId={gameId}
+                              rows={rows}
+                              rowCount={rowCount}
+                    />
+                    <Hand gameId={gameId}
+                          player_name={hand.player.name}
+                          cards={hand.cards}
+                          Hints={hand.hints}
+                          askHint={askHint}
+                          hands={hands}
+                          newToHand={hand.new_to_hand}
+                    />
+                </DndContext>
+                <WinnerPopUp
+                    isVisible={hasWinners}
+                    winners={winners}
+                />
+                <LeftPopUp
+                    isVisible={left}
+                    player_left={playerLeft}
                 />
             </div>
-
-            <DndContext
-                onDragStart={handleDragStart}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-            >
-
-                <TimeLine cards={timeline.cards}
-                          gameId={gameId}
-                          rows={rows}
-                          rowCount={rowCount}
-                />
-                <Hand gameId={gameId}
-                      player_name={hand.player.name}
-                      cards={hand.cards}
-                      Hints={hand.hints}
-                      askHint={askHint}
-                      hands={hands}
-                      newToHand={hand.new_to_hand}
-                />
-            </DndContext>
-            <WinnerPopUp
-                isVisible={hasWinners}
-                winners={winners}
-            />
-            <LeftPopUp
-                isVisible={left}
-                player_left={playerLeft}
-            />
-        </div>
         </BoardGameContext.Provider>
     )
 }

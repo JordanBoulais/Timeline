@@ -3,7 +3,7 @@ import '../css/Utils.css';
 import '../css/BoardGame.css';
 
 
-function GameLobbyPopUp({ isVisible, message, reset }) {
+function PopUp({ isVisible, message, reset}) {
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -11,7 +11,9 @@ function GameLobbyPopUp({ isVisible, message, reset }) {
     if (isVisible) {
       clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
-        reset();
+        if (reset) {
+          reset();
+        }
       }, 3000);
     }
 
@@ -21,10 +23,10 @@ function GameLobbyPopUp({ isVisible, message, reset }) {
   if (!isVisible) return null;
 
   return (
-    <div className="popup">
-      <label>{message}</label>
-    </div>
+        <div className="popup">
+          <div>{message}</div>
+        </div>
   );
 }
 
-export default GameLobbyPopUp;
+export default PopUp;

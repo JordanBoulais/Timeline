@@ -2,12 +2,10 @@ import "../css/TimeLine.css"
 import React from "react";
 import TimeLineRow from "./TimeLineRow.jsx";
 
-function TimeLine({rows,
-                  rowCount
-                  }){
+function TimeLine({rows, rowCount}){
 
     let timelinescale = 1 - (rowCount - 1) * 0.025;
-    let translateY = 15 + (rowCount - 1) * 5;
+    let translateY = 15 + (rowCount - 1) * 6;
 
         return (
         <div className="timeline"

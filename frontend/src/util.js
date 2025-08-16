@@ -1,0 +1,1 @@
+export const API_BASE_URL = "/10771da3-4a81-48fa-a0e3-5f9af590513d-prod.e1-us-east-azure.choreoapis.dev/timeline/backend/websocket-api-be2/v1"

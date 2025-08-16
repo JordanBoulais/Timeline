@@ -27,6 +27,8 @@ class HandsModel(BaseModel):
 
 class TimeLineModel(BaseModel):
     cards : List[CardModel]
+    new_card : CardModel | None
+    right_answer : bool
 
 class GameModel(BaseModel):
     id : str
