@@ -160,7 +160,18 @@ function BoardGame({navigate, location}){
 
     const handleDragOver = async (event) => {
         const { active, over } = event;
-        let tileData = JSON.parse(over.id);
+
+            if (!over || !over.id) {
+                return; // Nothing to do if there's no target to drag over
+            }
+
+            let tileData;
+            try {
+                tileData = JSON.parse(over.id);
+            } catch (err) {
+                console.error("Invalid JSON in over.id:", over.id);
+                return;
+            }
 
         const message = {
             type: "over_tile",
