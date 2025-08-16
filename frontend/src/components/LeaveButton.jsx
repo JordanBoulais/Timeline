@@ -1,5 +1,5 @@
 import React from "react";
-import "../css/LeaveButton.css"
+import "../css/leaveButton.css"
 import imageMap from "./ImageMap.jsx";
 
 function LeaveButton({handleLeave, scaleFactor}) {
