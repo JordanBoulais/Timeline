@@ -2,13 +2,12 @@ import React, {useContext, useState} from "react";
 import "../css/GuessCard.css"
 import imageMap from "./ImageMap.jsx"
 import {BoardGameContext} from "../pages/BoardGame.jsx";
+import {AppContext} from "../App.jsx";
 
-function GuessCardHand({newToHand,
-                           selected,
-                           title,
-                            img}){
+function GuessCardHand({newToHand, selected, title, img}){
 
     const {isPlayersTurn} = useContext(BoardGameContext);
+    const {onMobile} = useContext(AppContext);
 
     let className = "guess-card-hand";
 
@@ -20,8 +19,7 @@ function GuessCardHand({newToHand,
     }
 
     let fontSize = 25 - title.length * 0.3;
-
-    fontSize = window.innerWidth < 768 ? fontSize * 0.6 : fontSize;
+    fontSize = onMobile ? fontSize * 0.6 : fontSize;
 
     let disabled = (isPlayersTurn) ? {} : {
         pointerEvents: "none",
@@ -31,7 +29,7 @@ function GuessCardHand({newToHand,
     return(
         <div className={className}
              style={disabled}
-        >
+             id={`${title}`}>
 
             <div className="bg-image"
                  style={{

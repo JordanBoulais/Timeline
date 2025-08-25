@@ -8,10 +8,12 @@ import GameBrowser from "../components/GameBrowser.jsx";
 import AttemptingConnexion from "../components/AttemptingConnexion.jsx";
 import {API_BASE_URL} from "../util.js"
 import {WebSocketContextObj} from "./WebSocketContext.jsx";
+import {AppContext} from "../App.jsx";
 
 function Home({navigate, location}){
 
     const wsContext = useContext(WebSocketContextObj);
+    const onMobile = useContext(AppContext);
     const wsRef = React.useRef(null);
 
     const [player, setPlayer] = useState("");
@@ -28,10 +30,9 @@ function Home({navigate, location}){
 
     const [selectedGame, setSelectedGame] = useState({});
     const [games, setGames] = useState([]);
-    const [bgColor, setBgColor] = useState([Math.random()*255*0.5,
-                                                        Math.random()*255*0.5,
-                                                        Math.random()*255*0.5])
-
+    const [bgColor, setBgColor] = useState([Math.random()*255,
+                                                        Math.random()*255,
+                                                        Math.random()*255])
     const handleInputChange = (event) => {
         setPlayer(event.target.value);
     };
@@ -161,7 +162,7 @@ function Home({navigate, location}){
             if (!socket || (socket.readyState !== WebSocket.OPEN && socket.readyState !== WebSocket.CONNECTING)) {
                 //`wss://${API_BASE_URL}/ws/timeline/${id}`, id`
                 // `ws://localhost:8080/ws/timeline/${id}`
-                wsContext.connect(`wss://${API_BASE_URL}/ws/timeline/${id}`, id);
+                wsContext.connect(`ws://localhost:8080/ws/timeline/${id}`, id);
                 console.log("Attempting connexion");
             }
 

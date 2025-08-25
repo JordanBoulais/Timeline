@@ -31,6 +31,20 @@ html, body {
     top: 50%;
 }
 
+
+.test-popup{
+    position: fixed;
+    width: 200px;
+    height: 100px;
+    border-radius: 25px;
+    background-color: rgba(1, 1, 1, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    animation: translateUp 2s forwards ease-in-out;
+}
+
 .players-turn-container{
     display: flex;
     flex-direction: row;

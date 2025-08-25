@@ -1,16 +1,20 @@
-import React from "react";
+import React, {useContext} from "react";
 import "../css/GuessCard.css"
 import imageMap from "./ImageMap.jsx"
+import {AppContext} from "../App.jsx";
 
 function GuessCardTimeLine({title,
                            year,
                            img,
                            index,
                            overTile,
-                           newCard}){
+                           newCard,
+                           wrongAnswer}){
+
+    const {onMobile} = useContext(AppContext);
 
     let fontSize = 25 - title.length * 0.3
-    fontSize = window.innerWidth < 768 ? fontSize * 0.6 : fontSize;
+    fontSize = onMobile ? fontSize * 0.6 : fontSize;
     let xOffset = 0;
 
     if (index === overTile){
@@ -26,10 +30,14 @@ function GuessCardTimeLine({title,
     }
 
 
+    let bord = wrongAnswer ? "2px solid red" : "2px solid white"
+
     return(
         <div className={className}
+             id={`${year}-timeline`}
             style={{
-                transform : `translate(${xOffset}px, 0px)`
+                transform : `translate(${xOffset}px, 0px)`,
+                border : bord
             }}
         >
 

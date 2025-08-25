@@ -2,19 +2,24 @@ import "../css/Tile.css"
 import React, {useContext} from "react";
 import {BoardGameContext} from "../pages/BoardGame.jsx";
 
-function Tile({index, setNodeRef}){
+function Tile({index, row, setNodeRef}){
 
-    const {isPlayersTurn, overTile, hintTiles, handleTileClick} = useContext(BoardGameContext);
+    const {isPlayersTurn, overTile, hintTiles, wrongAnswer} = useContext(BoardGameContext);
 
-    const handleClick = async (index) => {
-        handleTileClick(index)
-    };
+    // const handleClick = async (index) => {
+    //     handleTileClick(index)
+    // };
 
     let is_hint = hintTiles.includes(index);
     let className = "tile";
-
+    if (wrongAnswer){
+            className = "tile-wrong-answer"
+        }
     if ((! is_hint) && (! isPlayersTurn)){
         className = "tile-disabled"
+        if (wrongAnswer){
+            className = "tile-disabled-wrong-answer"
+        }
     } else if (is_hint && isPlayersTurn){
         className = "hint-tile"
     } else if (is_hint && (! isPlayersTurn)){
@@ -25,7 +30,7 @@ function Tile({index, setNodeRef}){
     return (
     <div className={className}
          ref={setNodeRef}
-         onClick={() => handleClick(index)}
+         // onClick={() => handleClick(index)}
          style={tileStyle}
     >
     </div>

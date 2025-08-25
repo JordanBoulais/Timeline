@@ -1,4 +1,5 @@
-.tile, .tile-disabled, .hint-tile, .hint-tile-disabled {
+.tile, .tile-disabled, .hint-tile, .hint-tile-disabled,
+    .tile-wrong-answer, .hint-tile-disabled-wrong-answer {
     width: 1px;
     height: 100px;
     opacity: 0.05;
@@ -6,6 +7,20 @@
     flex-shrink: 0;   /* Prevent shrinking in flexbox */
     flex-grow: 0;     /* Prevent growing in flexbox */
     object-fit: contain; /* if it's an image or media */
+}
+
+.tile-wrong-answer, .hint-tile-disabled-wrong-answer{
+    animation: wrong-answer 2s linear;
+}
+
+@keyframes wrong-answer {
+  0% {
+    opacity: 0.5;
+    background-color: #d70e0e;
+  } 100% {
+    opacity: 0.05;
+    background-color: #ffffff;
+  }
 }
 
 @keyframes glowOpacity {
@@ -20,7 +35,7 @@
   }
 }
 
-.tile-disabled {
+.tile-disabled, .hint-tile-disabled-wrong-answer {
     pointer-events: none;
     user-select: none;     /* Prevents text selection */
 }
@@ -48,9 +63,8 @@
 
 
 @media screen and (max-width: 768px) {
-
-    .tile, .tile-disabled, .hint-tile, .hint-tile-disabled {
+    .tile, .tile-disabled, .hint-tile, .hint-tile-disabled,
+        .tile-wrong-answer, .tile-disabled-wrong-answer{
         height: 59px;
     }
-
 }

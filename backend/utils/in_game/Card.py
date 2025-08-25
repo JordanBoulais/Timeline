@@ -23,6 +23,9 @@ class Card():
     def get_title(self):
         return self.title
 
+    def get_year(self):
+        return self.year
+
     def to_model(self):
         return CardModel(title=self.title,
                          year=self.year,

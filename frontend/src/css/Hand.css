@@ -36,6 +36,7 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    opacity: 0.9;
 }
 
 .players-turn, .not-players-turn, .players-won{

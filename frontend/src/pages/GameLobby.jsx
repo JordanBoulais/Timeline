@@ -9,12 +9,14 @@ import LeaveButton from "../components/LeaveButton.jsx";
 
 import { WebSocketContextObj } from './WebSocketContext.jsx';
 import PopUp from "../components/PopUp.jsx";
+import {AppContext} from "../App.jsx";
 
 export const GameLobbyContext = createContext(null);
 
 function GameLobby({navigate, location}){
 
     const wsContext = useContext(WebSocketContextObj);
+    const {onMobile} = useContext(AppContext);
     const wsRef = React.useRef(null);
 
     const [player, setPlayer] = useState("");
@@ -33,10 +35,9 @@ function GameLobby({navigate, location}){
     const [lastJoin, setLastJoin] = useState("");
     const [lastLeft, setLastLeft] = useState("");
     const [socketId, setSocketId] = useState("");
-    const [bgColor, setBgColor] = useState([Math.random()*255*0.5,
-                                                        Math.random()*255*0.5,
-                                                        Math.random()*255*0.5]);
-
+    const [bgColor, setBgColor] = useState([onMobile ? Math.random()*255*0.5 : Math.random()*255,
+                                                        onMobile ? Math.random()*255*0.5 : Math.random()*255,
+                                                        onMobile ? Math.random()*255*0.5 : Math.random()*255]);
     const handleLeave = (player) => {
 
         let message =

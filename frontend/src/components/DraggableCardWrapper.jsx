@@ -1,12 +1,12 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import GuessCardHand from './GuessCardHand';
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 import {BoardGameContext} from "../pages/BoardGame.jsx";
 
 function DraggableCardWrapper(props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: JSON.stringify({ title: props.title, year: props.year })
+    id: JSON.stringify({ title: props.title, year: props.year, img : props.img})
   });
 
   const {isPlayersTurn} = useContext(BoardGameContext);

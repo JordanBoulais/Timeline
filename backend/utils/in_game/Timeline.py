@@ -7,6 +7,8 @@ class Timeline():
         self.hint_tiles = []
         self.new_card = None
         self.right_answer = False
+        self.ghost_ref = None
+        self.ghost_ref_pos = "Left"
 
     def calc_answer_index(self, card):
 
@@ -18,17 +20,29 @@ class Timeline():
                 break
         return index
 
+    def set_ghost_ref_pos(self, pos):
+        self.ghost_ref_pos = pos
+
     def set_right_answer(self, right_answer):
         self.right_answer = right_answer
 
     def set_new_card(self, new_card):
         self.new_card = new_card
 
+    def set_ghost_ref(self, ghost_ref):
+        self.ghost_ref = ghost_ref
+
     def set_hint_tiles(self, hint_tiles):
         self.hint_tiles = hint_tiles
 
+    def get_ghost_ref_pos(self):
+        return self.ghost_ref_pos
+
     def get_right_answer(self):
         return self.right_answer
+
+    def get_ghost_ref(self):
+        return self.ghost_ref
 
     def get_hint_tiles(self):
         return self.hint_tiles

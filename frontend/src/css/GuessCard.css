@@ -122,6 +122,22 @@
 
 }
 
+.guess-card-timeline-ghost{
+    opacity: 0.8;
+    animation: levitate-ghost 2s ease-out;
+
+}
+
+@keyframes levitate-ghost {
+    0% {
+        transform: translate(0px, -20px);
+    }
+    100% {
+        transform: translate(0px, -80px);
+    }
+}
+
+
 .guess-year{
     position: absolute;
     bottom: 0;

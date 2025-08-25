@@ -51,6 +51,8 @@ async def fetch_games():
     """
     Return all games from database.
     """
+
+    print("fetch_games")
     async with games_lock:
         try:
             to_be_removed = [
@@ -63,6 +65,7 @@ async def fetch_games():
         except Exception as e:
             print(e)
 
+    print(games_db.values())
     games = [g.to_model() for g in games_db.values()]
 
     return GamesModel(games=games)
@@ -206,6 +209,19 @@ async def place_card(game : Game, tile_index : int) -> None:
     game.set_selected_card(None)
 
     timeline.set_new_card(selected_card)
+
+    try:
+        print(answer_index)
+        for card in timeline.get_cards():
+            print(card)
+        if answer_index > len(timeline.get_cards())-1:
+            timeline.set_ghost_ref(timeline.get_cards()[-1])
+            timeline.set_ghost_ref_pos("Right")
+        else:
+            timeline.set_ghost_ref(timeline.get_cards()[answer_index])
+            timeline.set_ghost_ref_pos("Left")
+    except Exception as e:
+        print(e)
 
     # Right answer
     if tile_index == answer_index:
@@ -425,13 +441,13 @@ async def broadcast_game(data, game: Game):
                           data.get("player_name"),
                           data.get("card_title"))
     elif comm_type == "player_left":
-        game.set_is_over(True)
         host_name = game.get_host().get_name()
         game.remove_player_by_name(data.get("player_left"))
         # if now empty, deleting game
         if len(game.get_players()) == 0:
             del games_db[game.get_id()]
-            return None
+            return Game("", [])
+        # Setting new host if host has left
         else:
             if host_name == data.get("player_left"):
                 game.set_host(game.get_players()[0])
@@ -465,10 +481,13 @@ async def broadcast_game(data, game: Game):
             elif comm_type == "place_card":
                 await player.get_websocket().send_json({
                     "type" : "place_card",
+                    "placeCard" : data.get("place_card"),
+                    "ghostRefYear" : game.get_timeline().get_ghost_ref().get_year(),
+                    "ghostRefPos" : game.get_timeline().get_ghost_ref_pos(),
                     "timeline" : game.get_timeline().to_model().model_dump(),
                     "hands" : game.get_dump_hands_model(),
                     "players_turn" : game.get_players_orders()[game.get_players_turn()],
-                    "is_over" : game.get_is_over(),
+                    "isOver" : game.get_is_over(),
                     "winners" : [w.get_name() for w in game.get_winners()],
                 })
             elif comm_type == "ask_hint":

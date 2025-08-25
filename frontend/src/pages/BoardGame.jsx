@@ -7,12 +7,14 @@ import LeaveButton from "../components/LeaveButton.jsx";
 import "../css/Tile.css"
 import "../css/BoardGame.css"
 import "../css/Utils.css"
-import React, {createContext, useContext, useEffect, useState} from "react";
+import React, {createContext, useContext, useEffect, useRef, useState} from "react";
 import {NavigateWrapper} from "./NavigateWrapper.jsx";
 import { WebSocketContextObj } from './WebSocketContext.jsx'
+import {AppContext} from "../App.jsx"
 import {DndContext} from "@dnd-kit/core";
 import PlayersTurn from "../components/PlayersTurn.jsx";
 import PopUp from "../components/PopUp.jsx";
+import GuessCardTimeLineGhost from "../components/GuessCardTimeLineGhost.jsx";
 
 export const BoardGameContext = createContext(null);
 
@@ -21,7 +23,9 @@ export const BoardGameContext = createContext(null);
  */
 function BoardGame({navigate, location}){
 
+
     const wsContext = useContext(WebSocketContextObj);
+    const {onMobile} = useContext(AppContext);
     const wsRef = React.useRef(null);
 
     const [gameId, setGameId] = useState("");
@@ -35,9 +39,9 @@ function BoardGame({navigate, location}){
     const [rows, setRows] = useState([]);
     const [rowCount, setRowCount] = useState(1);
     const [hintTiles, setHintTiles] = useState([]);
-    const [bgColor, setBgColor] = useState([Math.random()*255*0.5,
-                                                    Math.random()*255*0.5,
-                                                    Math.random()*255*0.5]);
+    const [bgColor, setBgColor] = useState([onMobile ? Math.random()*255*0.5 : Math.random()*255,
+                                                    onMobile ? Math.random()*255*0.5 : Math.random()*255,
+                                                    onMobile ? Math.random()*255*0.5 : Math.random()*255]);
     const [isOver, setIsOver] = useState(false);
     const [winners, setWinners] = useState([]);
     const [playerLeft, setPlayerLeft] = useState("");
@@ -45,9 +49,13 @@ function BoardGame({navigate, location}){
     const [maxCardsPerRow, setMaxCardPerRow] = useState(8);
     const [popUpMessage, setPopUpMessage] = useState("");
 
+    const [timelineGhosts, setTimelineGhosts] = useState({});
+    const [wrongAnswer, setWrongAnswer] = useState(false);
+
     const handleLeave = () => {
 
-        let message = { type : "player_left",
+        let message = {
+            type : "player_left",
             player_left : player};
 
         wsRef.current.send(JSON.stringify(message));
@@ -64,8 +72,8 @@ function BoardGame({navigate, location}){
      * Create rows based on cards input.
      */
     const cardsToRows = (cards) => {
-        let cardWidth = window.innerWidth < 768 ? 65 : 155;
-        let maxCards = window.innerWidth < 768 ? 4 : 8;
+        let cardWidth = onMobile ? 65 : 155;
+        let maxCards = onMobile ? 4 : 8;
         let cardsPerRow = Math.floor(window.innerWidth / cardWidth)
 
         cardsPerRow = (cardsPerRow > maxCards) ? maxCards : cardsPerRow
@@ -87,6 +95,16 @@ function BoardGame({navigate, location}){
         }
         return rs;
     };
+
+
+    const resetTimelineGhosts = (key) => {
+
+        setTimelineGhosts(prev => {
+          const newPopUps = { ...prev }; // copy the object
+          delete newPopUps[key];    // remove the key
+          return newPopUps;              // update state
+            });
+    }
 
 
     /**
@@ -154,8 +172,9 @@ function BoardGame({navigate, location}){
         const tileData = JSON.parse(over.id);
 
         const message = {
-          type: "place_card",
-          tile_index: tileData.index
+            type: "place_card",
+            place_card : JSON.parse(active.id),
+            tile_index: tileData.index,
         };
 
         wsRef.current.send(JSON.stringify(message));
@@ -264,20 +283,41 @@ function BoardGame({navigate, location}){
                 const data = JSON.parse(event.data);
                 // Place card on timeline
                 if (data.type === "place_card") {
+
                     let rs = cardsToRows(data.timeline.cards)
                     setTimeline(data.timeline);
                     setHands(data.hands);
                     setPlayersTurn(data.players_turn);
                     setRows(rs);
                     setRowCount(rs.length);
-                    setIsOver(data.is_over);
+                    setIsOver(data.isOver);
                     setWinners(data.winners);
                     setHintTiles([]);
+
+
+                    // If wrong answer, displaying answer as a ghost card effect.
                     if (data.timeline.new_card !== null && !data.timeline.right_answer){
-                        setPopUpMessage(`${data.timeline.new_card.title.toString()}
-                                                ${data.timeline.new_card.year.toString()}`);
-                    } else {
-                        setPopUpMessage("");
+                        setWrongAnswer(true);
+
+                        setTimeout(() => {
+                                setWrongAnswer(false)
+                              }, 1800);
+
+                        const element = document.getElementById(`${data.ghostRefYear}-timeline`);
+                        const rect = element.getBoundingClientRect();
+
+                        let cardWidth = onMobile ? 65 : 155;
+                        let cardXOffsetExtra = onMobile ? 10 : 8;
+                        let cardXOffset = data.ghostRefPos === "Left" ? (cardWidth/2 + cardXOffsetExtra) * -1 : (cardWidth/2 + cardXOffsetExtra)
+                        let dropPosition = [rect.left + cardXOffset, rect.top];
+
+                        setTimelineGhosts(prev => ({
+                          ...prev, [data.placeCard.title]: {title : data.placeCard.title,
+                                                            year : data.placeCard.year,
+                                                            img : data.placeCard.img,
+                                                            position : dropPosition
+                                                            },}));
+
                     }
 
                     checkGameState()
@@ -347,10 +387,10 @@ function BoardGame({navigate, location}){
     const wrongAnswerPopUp = (!timeline.right_answer
                                         && timeline.new_card != null
                                         && popUpMessage !== "")
+
     // alert(wrongAnswerPopUp)
     // Display Hands here
     return (
-
         <BoardGameContext.Provider value={{player,
                                     isPlayersTurn,
                                     playersTurn,
@@ -358,7 +398,9 @@ function BoardGame({navigate, location}){
                                     overTile,
                                     hintTiles,
                                     timeline,
-                                    handleTileClick}} >
+                                    handleTileClick,
+                                    wrongAnswer
+                                    }} >
             <div className="board-game">
                 <div className="bg-color"
                      style={{
@@ -392,6 +434,18 @@ function BoardGame({navigate, location}){
                         scaleFactor={0.5}
                     />
                 </div>
+
+
+                {Object.entries(timelineGhosts).map(([key, card]) => (
+                  <GuessCardTimeLineGhost
+                    key={key}        // use the object key
+                    title={key}
+                    year={card.year}
+                    img={card.img}
+                    position={card.position} // the value
+                    reset={resetTimelineGhosts}
+                  />
+                ))}
 
                 <PopUp
                     isVisible={wrongAnswerPopUp}
