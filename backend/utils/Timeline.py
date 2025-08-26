@@ -1,4 +1,4 @@
-from ..Models import TimeLineModel
+from .Models import TimeLineModel
 
 class Timeline():
 

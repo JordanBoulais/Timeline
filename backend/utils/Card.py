@@ -1,5 +1,4 @@
-
-from ..Models import CardModel
+from .Models import CardModel
 
 class Card():
 

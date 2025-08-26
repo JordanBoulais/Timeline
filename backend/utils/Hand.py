@@ -1,5 +1,5 @@
-from ..Models import HandModel, PlayerModel
-from ..Player import Player
+from .Models import HandModel, PlayerModel
+from .Player import Player
 
 class Hand():
 

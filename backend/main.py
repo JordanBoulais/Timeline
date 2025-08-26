@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from utils.Models import *
 from utils.Player import Player
-from utils.in_game import *
+from utils import *
 
 # --- FRONTEND COMMUNICATION ---
 app = FastAPI()
@@ -52,7 +52,6 @@ async def fetch_games():
     Return all games from database.
     """
 
-    print("fetch_games")
     async with games_lock:
         try:
             to_be_removed = [
@@ -65,7 +64,6 @@ async def fetch_games():
         except Exception as e:
             print(e)
 
-    print(games_db.values())
     games = [g.to_model() for g in games_db.values()]
 
     return GamesModel(games=games)
@@ -136,40 +134,40 @@ async def game_start(data):
     Handle game start.
     Fetch deck cards, shuffle deck, assign hands, etc.
     """
+    try:
+        game = games_db[data.get("id")]
+        deck = Deck.load_deck(data.get("deck"))
 
-    game = games_db[data.get("id")]
-    deck = Deck.load_deck(data.get("deck"))
-
-    deck.shuffle()
-    starting_card = deck.top_card()
-    # adding to timeline
-    timeline = Timeline(starting_card)
-
-
-    # Give starting hands
-    hands = {}
-    names = []
-    players = game.get_players()
-    random.shuffle(players)
-    for player in players:
-        names.append(player.get_name())
-        hand = Hand(player)
-        hand.set_cards(deck.top_n_cards(int(data.get("hand_size"))))
-        hands[player.get_name()] = hand
-        hand.set_hints(int(data.get("hints")))
-
-    game.set_default()
-
-    game.set_hints(int(data.get("hints")))
-    game.set_hint_size(int(data.get("hint_size")))
-    game.set_hand_size(int(data.get("hand_size")))
-    game.set_deck(deck)
-    game.set_timeline(timeline)
-    game.set_hands(hands)
-    game.set_players_orders(names)
-    game.set_in_game(True)
+        deck.shuffle()
+        starting_card = deck.top_card()
+        # adding to timeline
+        timeline = Timeline(starting_card)
 
 
+        # Give starting hands
+        hands = {}
+        names = []
+        players = game.get_players()
+        random.shuffle(players)
+        for player in players:
+            names.append(player.get_name())
+            hand = Hand(player)
+            hand.set_cards(deck.top_n_cards(int(data.get("hand_size"))))
+            hands[player.get_name()] = hand
+            hand.set_hints(int(data.get("hints")))
+
+        game.set_default()
+
+        game.set_hints(int(data.get("hints")))
+        game.set_hint_size(int(data.get("hint_size")))
+        game.set_hand_size(int(data.get("hand_size")))
+        game.set_deck(deck)
+        game.set_timeline(timeline)
+        game.set_hands(hands)
+        game.set_players_orders(names)
+        game.set_in_game(True)
+    except Exception as e:
+        print(e)
 
 async def check_game_state(game : Game) -> Dict[str, Any]:
     """
@@ -211,9 +209,6 @@ async def place_card(game : Game, tile_index : int) -> None:
     timeline.set_new_card(selected_card)
 
     try:
-        print(answer_index)
-        for card in timeline.get_cards():
-            print(card)
         if answer_index > len(timeline.get_cards())-1:
             timeline.set_ghost_ref(timeline.get_cards()[-1])
             timeline.set_ghost_ref_pos("Right")
@@ -521,7 +516,6 @@ async def broadcast_game(data, game: Game):
             print(f"WebSocket send error: {e}")
 
     return game if comm_type != "player_left" else Game("", [])
-
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))

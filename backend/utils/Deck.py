@@ -11,13 +11,19 @@ class Deck():
         self.name = name
 
     def get_name(self):
+        """"""
         return self.name
 
     def top_card(self):
+        """
+        Top card of the deck.
+        """
         return self.cards.pop()
 
     def top_n_cards(self, n):
-
+        """
+        Top n cards of the deck.
+        """
         cards = []
         for i in range(n):
             cards.append(self.top_card())
@@ -25,13 +31,15 @@ class Deck():
         return cards
 
     def shuffle(self):
+        """
+        Shuffle the deck.
+        """
         shuffle(self.cards)
 
     def get_cards(self):
         return self.cards
 
     def __str__(self):
-
         out_str = "{"
 
         for card in self.cards:
@@ -43,8 +51,11 @@ class Deck():
 
     @classmethod
     def load_deck(cls, deck_name):
+        """
+        Loads a deck from the given name.
+        """
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(script_dir, "../../", "decks", f"{deck_name}.json")
+        file_path = os.path.join(script_dir, "../", "decks", f"{deck_name}.json")
 
         # script_dir = os.path.dirname(os.path.abspath(__file__))
         # file_path = os.path.join(script_dir, "decks", f"{deck_name}.json")

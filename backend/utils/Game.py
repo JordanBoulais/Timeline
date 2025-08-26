@@ -1,9 +1,10 @@
 import copy
 
-from . import Timeline, Card
-from ..Models import GameModel
+from .Timeline import Timeline
+from .Card import Card
+from .Models import GameModel
 
-from ..utils import list_decks
+from .utils import list_decks
 
 class Game():
 
@@ -219,9 +220,6 @@ class Game():
 
 
     def to_model(self):
-
-
-        print(self.selected_deck)
 
         return GameModel(id=self.id,
                          players=[player.to_model() for player in self.players],
