@@ -52,6 +52,9 @@ function BoardGame({navigate, location}){
     const [timelineGhosts, setTimelineGhosts] = useState({});
     const [wrongAnswer, setWrongAnswer] = useState(false);
 
+    /**
+     * Notify all the players that a player left.
+     */
     const handleLeave = () => {
 
         let message = {
@@ -63,10 +66,12 @@ function BoardGame({navigate, location}){
         navigate("/");
     }
 
+    /**
+     * Resetting pop up message
+     */
     const reset = () => {
         setPopUpMessage("");
     }
-
 
     /**
      * Create rows based on cards input.
@@ -96,7 +101,10 @@ function BoardGame({navigate, location}){
         return rs;
     };
 
-
+    /**
+     * Removing timeline ghost card from dict.
+     * @param key
+     */
     const resetTimelineGhosts = (key) => {
 
         setTimelineGhosts(prev => {
@@ -165,6 +173,12 @@ function BoardGame({navigate, location}){
         await updateHandCards(gameId)
     }
 
+    /**
+     * Place a card upon dropping a card on the timeline.
+     *
+     * @param event
+     * @returns {Promise<void>}
+     */
     const handleDragEnd = async (event) => {
       const { active, over } = event;
 
@@ -190,6 +204,12 @@ function BoardGame({navigate, location}){
       );
     };
 
+    /**
+     * Handle dragging over a timeline's tile. (For cards animation)
+     *
+     * @param event
+     * @returns {Promise<void>}
+     */
     const handleDragOver = async (event) => {
         const { active, over } = event;
 
@@ -212,6 +232,12 @@ function BoardGame({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     }
 
+    /**
+     * Deprecated, tiles no longer supports being clicked.
+     *
+     * @param tileIndex
+     * @returns {Promise<void>}
+     */
     const handleTileClick = async (tileIndex) => {
         const message = {
             type: "place_card",
@@ -221,12 +247,22 @@ function BoardGame({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     };
 
-      const handlePopState = (event) => {
+    /**
+     * Preventing going back in browser history.
+     *
+     * @param event
+     */
+    const handlePopState = (event) => {
     // Only intercept "back"
     window.history.pushState(null, "", window.location.href);
   };
 
-  const setBoardGameInitValues = (data) => {
+    /**
+     * Setting up initial values based on game setting from game lobby.
+     *
+     * @param data
+     */
+    const setBoardGameInitValues = (data) => {
         let rs = cardsToRows(data.timeline.cards)
         setHost(data.host.name);
         setTimeline(data.timeline);
@@ -238,16 +274,25 @@ function BoardGame({navigate, location}){
         setWinners([]);
         setPlayerLeft("");
         setHintTiles([]);
-  }
-
-  const getWebSocket = (socketId) => {
-
-        wsRef.current = socketId ? wsContext.getSocket(socketId) : null;
-        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN){
-            navigate("/");
-        }
     }
 
+    /**
+     * Get websocket
+     *
+     * @param socketId
+     */
+      const getWebSocket = (socketId) => {
+            wsRef.current = socketId ? wsContext.getSocket(socketId) : null;
+            if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN){
+                navigate("/");
+            }
+        }
+
+    /**
+     * Getting initial values based on game setting from game lobby.
+     *
+     * @param _gameId
+     */
     const getBoardGameInitValues = (_gameId) => {
 
         let message = {
@@ -258,7 +303,9 @@ function BoardGame({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     }
 
-    // Component mounted
+    /**
+     * Upon Component mounted
+     */
     useEffect(() => {
         let id = location?.state?.socketId;
         getWebSocket(id)

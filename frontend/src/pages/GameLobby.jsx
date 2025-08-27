@@ -38,6 +38,10 @@ function GameLobby({navigate, location}){
     const [bgColor, setBgColor] = useState([onMobile ? Math.random()*255*0.5 : Math.random()*255,
                                                         onMobile ? Math.random()*255*0.5 : Math.random()*255,
                                                         onMobile ? Math.random()*255*0.5 : Math.random()*255]);
+    /**
+     * Notify all the players that a player left.
+     * If host has left, setting up new host.
+     */
     const handleLeave = (player) => {
 
         let message =
@@ -49,6 +53,11 @@ function GameLobby({navigate, location}){
           {});
     }
 
+    /**
+     * Handle clicking on kick button (host only)
+     *
+     * @param playerName
+     */
     const handleKick = (playerName) => {
 
         let message = {
@@ -57,7 +66,10 @@ function GameLobby({navigate, location}){
         wsRef.current.send(JSON.stringify(message));
     }
 
-
+    /**
+     * Changing game values for all players.
+     *
+     */
     const handleInputChange = () => {
         let message = {
           type: "input_updated",
@@ -73,6 +85,11 @@ function GameLobby({navigate, location}){
         }
     }
 
+    /**
+     * Saving game values in backend before navigating to game board.
+     *
+     * @param event
+     */
     const handleStartGame = (event) => {
 
         let message = {
@@ -87,11 +104,20 @@ function GameLobby({navigate, location}){
         wsRef.current.send(JSON.stringify(message));
     }
 
+    /**
+     * For notification. resetting last join player and last left player
+     *
+     */
     const resetLastJoinLeft = () => {
         setLastJoin("");
         setLastLeft("");
     }
 
+    /**
+     * Get Websocket.
+     *
+     * @param socketId
+     */
     const getWebSocket = (socketId) => {
 
         wsRef.current = socketId ? wsContext.getSocket(socketId) : null;
@@ -100,6 +126,11 @@ function GameLobby({navigate, location}){
         }
     }
 
+    /**
+     * Setting up game lobby init values.
+     *
+     * @param data
+     */
     const setLobbyInitValues = (data) => {
         setGameId(data.id);
         setDecks(data.decks);
@@ -112,6 +143,11 @@ function GameLobby({navigate, location}){
         setHost(data.host.name);
     }
 
+    /**
+     * Getting game lobby init values.
+     *
+     * @param gameId
+     */
     const getLobbyInitValues = (gameId) => {
 
         let message = {
@@ -122,12 +158,20 @@ function GameLobby({navigate, location}){
         wsRef.current.send(JSON.stringify(message));
     };
 
-  const handlePopState = (event) => {
+    /**
+     * Preventing Player from going back in browser history
+     *
+     * @param event
+     */
+    const handlePopState = (event) => {
     // Only intercept "back"
     window.history.pushState(null, "", window.location.href);
-  };
+    };
 
-    // Mount
+    /**
+     * Upon Component mounted
+     *
+     */
     useEffect(() => {
         let id = location?.state?.socketId;
         getWebSocket(id)

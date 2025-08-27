@@ -11,7 +11,6 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from utils.Models import *
-from utils.Player import Player
 from utils import *
 
 # --- FRONTEND COMMUNICATION ---

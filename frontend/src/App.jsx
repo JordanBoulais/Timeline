@@ -10,6 +10,7 @@ export const AppContext = createContext(null);
 
 function App() {
 
+    // To determine if player is on mobile or not.
     let onMobile = window.innerWidth < 768;
 
   return (

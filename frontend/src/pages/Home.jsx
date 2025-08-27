@@ -33,19 +33,38 @@ function Home({navigate, location}){
     const [bgColor, setBgColor] = useState([Math.random()*255,
                                                         Math.random()*255,
                                                         Math.random()*255])
+    /**
+     * Saving player name in state.
+     *
+     * @param event
+     */
     const handleInputChange = (event) => {
         setPlayer(event.target.value);
     };
 
+    /**
+     * Saving current password entered in state.
+     *
+     * @param event
+     */
     const handleGamePasswordChanged = (event) => {
         setPassword(event.target.value);
     };
 
+    /**
+     * Closing Password pop up.
+     *
+     * @param event
+     */
     const handlePasswordPopUpClose = (event) => {
         setGamePasswordPopUp(true);
         setPassword("");
     };
 
+    /**
+     * Handling join game if game has a password.
+     *
+     */
     const clickJoinWithPassword = () => {
 
         if (password === selectedGame.password){
@@ -60,6 +79,12 @@ function Home({navigate, location}){
         }
     }
 
+    /**
+     * Confirming that game is not fulled, has not started yet or contains
+     * a Player with same name before navigating to game lobby.
+     *
+     * @param data
+     */
     const joinGame = (data) => {
 
         if (data.id === ""){
@@ -87,10 +112,21 @@ function Home({navigate, location}){
                     }});
     }
 
+    /**
+     * Closing game browser.
+     *
+     * @param event
+     */
     const handleCloseGameBrowser = (event) =>{
         setGameBrowserWindow(false);
     }
 
+    /**
+     * Handle pressing on a game card. Different behaviors if game has password
+     * or not.
+     *
+     * @param game
+     */
     const handleGameCardClick = (game) =>{
         // Join game or enter password
 
@@ -107,6 +143,11 @@ function Home({navigate, location}){
         }
     }
 
+    /**
+     * Create a new game with a unique id in backend.
+     *
+     * @param player
+     */
     const createGame = (player) =>{
 
         // Check if player entered a game
@@ -124,6 +165,13 @@ function Home({navigate, location}){
         wsRef.current.send(JSON.stringify(message))
     }
 
+    /**
+     * Handle pressing on Join Game button
+     * Will fetch all existing game from backend and
+     * display them in the game browser window.
+     *
+     * @param player
+     */
     const clickJoinGame = (player) =>{
         // Check if player entered a name
         if (player === ""){
@@ -138,20 +186,33 @@ function Home({navigate, location}){
         wsRef.current.send(JSON.stringify(message));
     }
 
+    /**
+     * Opening game browser window.
+     *
+     * @param data
+     */
     const fetchGames = (data) => {
         setGameBrowserWindow(true);
         setGames(data.games);
     }
 
-
-        useEffect(() => {
+    /**
+     * Handle player changed state.
+     */
+    useEffect(() => {
           playerRef.current = player;
     }, [player]);
 
-        useEffect(() => {
+    /**
+    * Handle attemptingConnexion changed state.
+    */
+    useEffect(() => {
           attemptingConnexionRef.current = attemptingConnexion;
     }, [attemptingConnexion]);
 
+    /**
+     * Upon Component mounted
+     */
     useEffect(() => {
 
         // Establishing connexion with backend
@@ -162,7 +223,8 @@ function Home({navigate, location}){
             if (!socket || (socket.readyState !== WebSocket.OPEN && socket.readyState !== WebSocket.CONNECTING)) {
                 //`wss://${API_BASE_URL}/ws/timeline/${id}`, id`
                 // `ws://localhost:8080/ws/timeline/${id}`
-                wsContext.connect(`ws://localhost:8080/ws/timeline/${id}`, id);
+                let apiUrl = window?.configs?.apiUrl ? window.configs.apiUrl : `ws://localhost:8080`;
+                wsContext.connect(`${apiUrl}/ws/timeline/${id}`, id);
                 console.log("Attempting connexion");
             }
 
