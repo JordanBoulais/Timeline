@@ -6,7 +6,7 @@ import RandomLineBackground from "../components/RandomLineBackground.jsx";
 import HomePagePassword from "../components/HomePagePassword.jsx";
 import GameBrowser from "../components/GameBrowser.jsx";
 import AttemptingConnexion from "../components/AttemptingConnexion.jsx";
-import {API_BASE_URL} from "../util.js"
+
 import {WebSocketContextObj} from "./WebSocketContext.jsx";
 import {AppContext} from "../App.jsx";
 
@@ -221,8 +221,7 @@ function Home({navigate, location}){
             const socket = wsContext.getSocket(id);
 
             if (!socket || (socket.readyState !== WebSocket.OPEN && socket.readyState !== WebSocket.CONNECTING)) {
-                //`wss://${API_BASE_URL}/ws/timeline/${id}`, id`
-                // `ws://localhost:8080/ws/timeline/${id}`
+
                 let apiUrl = window?.configs?.apiUrl ? window.configs.apiUrl : `ws://localhost:8080`;
                 wsContext.connect(`${apiUrl}/ws/timeline/${id}`, id);
                 console.log("Attempting connexion");

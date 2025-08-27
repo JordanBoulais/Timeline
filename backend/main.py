@@ -142,7 +142,6 @@ async def game_start(data):
         # adding to timeline
         timeline = Timeline(starting_card)
 
-
         # Give starting hands
         hands = {}
         names = []
