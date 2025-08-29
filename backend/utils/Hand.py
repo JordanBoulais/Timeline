@@ -29,6 +29,9 @@ class Hand():
             if c.title == card.title:
                 return c
 
+    def get_cards(self):
+        return self.cards
+
     def get_card_by_title(self, title):
         for c in self.cards:
             if c.title == title:

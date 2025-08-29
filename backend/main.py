@@ -1,5 +1,6 @@
 # ==== backend_fastapi.py ====
 import asyncio
+import copy
 import json
 import os
 import random
@@ -220,9 +221,18 @@ async def place_card(game : Game, tile_index : int) -> None:
     if tile_index == answer_index:
         timeline.add_card(selected_card, answer_index)
         timeline.set_right_answer(True)
+
         # If player has no more cards, game over
         if len(hand) == 0:
             game.add_winner(hand.get_player())
+
+            order = game.get_players_orders()[:]
+            for player in game.get_players_orders():
+                if len(game.get_hands()[player].get_cards()) > 1:
+                    order.remove(player)
+
+            game.set_players_orders(order)
+
     # Wrong answer
     else:
         game.add_discarded_card(selected_card)
@@ -241,12 +251,13 @@ async def place_card(game : Game, tile_index : int) -> None:
         hand.set_new_to_hand(top_card.get_title())
         hand.add_card(top_card)
 
-    # Check if game is over here
-    if game.get_winners() and game.get_players_turn() == (len(game.get_players()) - 1):
+    # Turn's index
+    game.set_players_turn((game.get_players_turn() + 1) % len(game.get_players_orders()))
+
+    # Check if game has winner and turn is back to first winning player
+    if game.get_winners() and game.get_players_orders()[game.get_players_turn()] == game.get_winners()[0].get_name():
         game.set_is_over(True)
 
-    # Turn's index
-    game.set_players_turn((game.get_players_turn() + 1) % len(game.get_players()) )
 
 async def ask_hint(game : Game, player : str):
     """

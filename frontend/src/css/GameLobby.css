@@ -10,8 +10,8 @@
     z-index: 9999;
     gap: 35px;
     padding-top: 10vh;
-    background-color: #262626;
 }
+
 
 .game-state-button{
     background-color: rgba(0,0,0,0.1);
@@ -46,6 +46,7 @@
 .player-card-frame {
     gap: 75px;
     display: flex;
+    align-items: flex-end;
 }
 
 .custom-input{
@@ -107,8 +108,7 @@ custom-select:disabled {
     }
 
     .player-card-container {
-        transform: scale(0.8);
-
+    bottom: 0;
     }
 
     .player-card-frame {

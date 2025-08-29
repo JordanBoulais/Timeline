@@ -494,11 +494,11 @@ function BoardGame({navigate, location}){
                   />
                 ))}
 
-                <PopUp
-                    isVisible={wrongAnswerPopUp}
-                    message={popUpMessage}
-                    reset={reset}
-                />
+                {/*<PopUp*/}
+                {/*    isVisible={wrongAnswerPopUp}*/}
+                {/*    message={popUpMessage}*/}
+                {/*    reset={reset}*/}
+                {/*/>*/}
 
                 <DndContext
                     onDragStart={handleDragStart}

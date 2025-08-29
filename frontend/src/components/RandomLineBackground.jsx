@@ -1,6 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, {useContext, useEffect, useRef} from "react";
+import {AppContext} from "../App.jsx";
 
 const RandomLineBackground = () => {
+
+  const {onMobile} = useContext(AppContext);
+
   const canvasRef = useRef(null);
   const linesRef = useRef([]);
 
@@ -21,7 +25,7 @@ const RandomLineBackground = () => {
         y2: y,
         color: Math.random() > 0.5 ? "white" : "black",
         lineWidth: Math.random() * 200,
-        alpha: Math.random() * 0.02,
+        alpha: Math.random() * (onMobile ? 0.1 : 0.02),
         speedX: Math.random() * 2 - 1, // random horizontal speed
       });
     }

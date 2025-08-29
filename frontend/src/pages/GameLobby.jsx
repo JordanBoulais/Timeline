@@ -32,12 +32,13 @@ function GameLobby({navigate, location}){
     const password = useState("");
 
     const [render, setRender] = useState("");
-    const [lastJoin, setLastJoin] = useState("");
-    const [lastLeft, setLastLeft] = useState("");
     const [socketId, setSocketId] = useState("");
     const [bgColor, setBgColor] = useState([onMobile ? Math.random()*255*0.5 : Math.random()*255,
                                                         onMobile ? Math.random()*255*0.5 : Math.random()*255,
                                                         onMobile ? Math.random()*255*0.5 : Math.random()*255]);
+    const [popUps, setPopUps] = useState([]);
+
+
     /**
      * Notify all the players that a player left.
      * If host has left, setting up new host.
@@ -108,9 +109,8 @@ function GameLobby({navigate, location}){
      * For notification. resetting last join player and last left player
      *
      */
-    const resetLastJoinLeft = () => {
-        setLastJoin("");
-        setLastLeft("");
+    const resetLastJoinLeft = (m) => {
+        setPopUps(prev => prev.filter(item => item !== m));
     }
 
     /**
@@ -198,7 +198,11 @@ function GameLobby({navigate, location}){
                 if (data.type === "player_joined") {
                     setPlayers(data.players);
                     setHost(data.host.name);
-                    setLastJoin(data.player_joined);
+
+                    if (player !== data.player_joined) {
+                        setPopUps(prev => [...prev, `${data.player_joined} Has Join!`]);
+                    }
+
                 } else if (data.type === "init_lobby") {
                     setLobbyInitValues(data)
                 }
@@ -206,7 +210,7 @@ function GameLobby({navigate, location}){
                 else if (data.type === "player_left") {
                     setPlayers(data.players);
                     setHost(data.host.name);
-                    setLastLeft(data.player_left);
+                    setPopUps(prev => [...prev, `${data.player_left} Has Left!`]);
                 } else if (data.type === "input_updated") {
                     // cheat to force re-render
                     selectedDeck.current = data.selected_deck;
@@ -221,7 +225,7 @@ function GameLobby({navigate, location}){
                     ${data.password}`);
                 } else if (data.type === "game_start") {
 
-                    message = {
+                    let message = {
                         type: "navigate_to_board_game",
                     };
                     wsRef.current.send(JSON.stringify(message));
@@ -253,28 +257,20 @@ function GameLobby({navigate, location}){
 
     let is_host = (host === player);
 
-    let message = "";
-    if (lastJoin !== "" && lastJoin !== player){
-        message = `${lastJoin} Has Joined!`
-
-    } else if (lastLeft !== "" && lastLeft !== player){
-        message = `${lastLeft} Has Left!`
-    }
-
-    let PopUpIsVisible = message !== "";
-
     return (
-        <div className="game-lobby">
-            <GameLobbyContext.Provider value={{handleKick: handleKick}}>
-                <div className="bg-color"
-                     style={{
-                         backgroundColor: `rgb(${bgColor[0]},
-                                            ${bgColor[1]},
-                                             ${bgColor[2]})`
-                     }}
-                />
-
-                <RandomLineBackground/>
+    <GameLobbyContext.Provider value={{handleKick: handleKick}}>
+        <div className="bg-color"
+             style={{
+                 backgroundColor: `rgb(${bgColor[0]},
+                                    ${bgColor[1]},
+                                     ${bgColor[2]})`
+             }}
+        />
+        <RandomLineBackground/>
+        <div className="game-lobby"
+                       style={{
+                    transform : `scale(${onMobile ? 0.9 : window.innerHeight/1065})`}}
+        >
 
                 <div className="vertical-div">
                     <div className="player-card-frame">
@@ -415,13 +411,17 @@ function GameLobby({navigate, location}){
                         />
                     </div>
 
-                    <PopUp
-                        reset={resetLastJoinLeft}
-                        isVisible={PopUpIsVisible}
-                        message={message}
-                    />
-            </GameLobbyContext.Provider>
+                    {popUps.map((message) => (
+                        <PopUp
+                            key={message}
+                            reset={resetLastJoinLeft}
+                            message={message}
+                        />
+                    ))}
+
+
         </div>
+        </GameLobbyContext.Provider>
 )
 }
 

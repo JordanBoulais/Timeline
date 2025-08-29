@@ -10,8 +10,8 @@ function PlayerCard({player, name, host}){
             {name === host &&
                 <div
                     style={{
-                        position : "absolute",
-                        transform : "translate(6vh, -25px)"
+                        position : "relative",
+                        transform : "translate(0%, 0px)"
                 }}
                 >(HOST)</div>
                 }
@@ -22,11 +22,11 @@ function PlayerCard({player, name, host}){
                         player={name}
                     />
                 }
+
                 <p className="player-name">{name}</p>
             </div>
         </div>
     );
-
 }
 
 export default PlayerCard
