@@ -6,7 +6,7 @@ Players take turns placing cards that represent historical events or inventions 
 
 Playable on both computer and mobile (cross-platform).
 
-    https://timeline.choreoapps.dev/
+    https://timeline-game-card.ca
 
 <img width="1402" height="938" alt="481827722-0da4023f-8fea-4550-813b-e45539010a18" src="https://github.com/user-attachments/assets/8853e8f9-728f-48b3-abb7-9fc69747d1e2" />
 <img width="351" height="798" alt="481828393-fe051cbc-5b97-443b-a7d0-552eb32170c7" src="https://github.com/user-attachments/assets/c8c77dc9-8587-48f1-920d-561bb1245d24" />

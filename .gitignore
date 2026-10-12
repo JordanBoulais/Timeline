@@ -1,2 +1,6 @@
-*venv/
-*__cache__/
+venv/
+__cache__/
+__pycache__/
+
+node_modules/
+dist/

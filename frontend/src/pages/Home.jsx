@@ -222,7 +222,9 @@ function Home({navigate, location}){
 
             if (!socket || (socket.readyState !== WebSocket.OPEN && socket.readyState !== WebSocket.CONNECTING)) {
 
-                let apiUrl = window?.configs?.apiUrl ? window.configs.apiUrl : `ws://localhost:8080`;
+                let apiUrl = window?.configs?.apiUrl
+                    ? window.configs.apiUrl
+                    : `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
                 wsContext.connect(`${apiUrl}/ws/timeline/${id}`, id);
                 console.log("Attempting connexion");
             }
